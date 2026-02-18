@@ -1,62 +1,54 @@
 {
-    "display_information": {
-        "name": "rls-jobs"
+  "display_information": {
+    "name": "rls-jobs",
+    "description": "Structured job and candidate intake for RLS",
+    "background_color": "#0f172a"
+  },
+  "features": {
+    "app_home": {
+      "home_tab_enabled": false,
+      "messages_tab_enabled": true,
+      "messages_tab_read_only_enabled": true
     },
-    "features": {
-        "app_home": {
-            "home_tab_enabled": false,
-            "messages_tab_enabled": true,
-            "messages_tab_read_only_enabled": true
-        },
-        "bot_user": {
-            "display_name": "rls-jobs",
-            "always_online": false
-        }
+    "bot_user": {
+      "display_name": "rls-jobs",
+      "always_online": false
     },
-    "oauth_config": {
-        "scopes": {
-            "bot": [
-                "chat:write"
-            ]
-        }
-    },
-    "settings": {
-        "event_subscriptions": {
-            "bot_events": [
-                "function_executed"
-            ]
-        },
-        "interactivity": {
-            "is_enabled": true
-        },
-        "org_deploy_enabled": true,
-        "socket_mode_enabled": true,
-        "token_rotation_enabled": false,
-        "function_runtime": "remote"
-    },
-    "functions": {
-        "sample_step": {
-            "title": "Sample step",
-            "description": "Runs sample step",
-            "input_parameters": {
-                "user_id": {
-                    "type": "slack#/types/user_id",
-                    "title": "User",
-                    "description": "Message recipient",
-                    "is_required": true,
-                    "hint": "Select a user in the workspace",
-                    "name": "user_id"
-                }
-            },
-            "output_parameters": {
-                "user_id": {
-                    "type": "slack#/types/user_id",
-                    "title": "User",
-                    "description": "User that completed the step",
-                    "is_required": true,
-                    "name": "user_id"
-                }
-            }
-        }
+    "shortcuts": [
+      {
+        "name": "Post a job",
+        "type": "global",
+        "callback_id": "post_job_shortcut",
+        "description": "Open the structured job posting modal"
+      },
+      {
+        "name": "Post candidate availability",
+        "type": "global",
+        "callback_id": "post_candidate_shortcut",
+        "description": "Open the structured candidate posting modal"
+      }
+    ],
+    "slash_commands": [
+      {
+        "command": "/rls-jobs-intake",
+        "url": "https://example.com/slack/commands",
+        "description": "Open structured intake modal (`job` or `candidate`)",
+        "usage_hint": "job | candidate",
+        "should_escape": false
+      }
+    ]
+  },
+  "oauth_config": {
+    "scopes": {
+      "bot": ["chat:write", "commands"]
     }
+  },
+  "settings": {
+    "interactivity": {
+      "is_enabled": true
+    },
+    "org_deploy_enabled": true,
+    "socket_mode_enabled": true,
+    "token_rotation_enabled": false
+  }
 }

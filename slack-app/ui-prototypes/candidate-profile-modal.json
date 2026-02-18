@@ -1,0 +1,511 @@
+{
+  "type": "modal",
+  "callback_id": "candidate_profile_submit",
+  "private_metadata": "{\"post_kind\":\"candidate_profile\"}",
+  "title": {
+    "type": "plain_text",
+    "text": "Post Candidate",
+    "emoji": true
+  },
+  "submit": {
+    "type": "plain_text",
+    "text": "Create Preview",
+    "emoji": true
+  },
+  "close": {
+    "type": "plain_text",
+    "text": "Cancel",
+    "emoji": true
+  },
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Structured candidate post*\nKeeps high-signal details without forcing long bios."
+      }
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_headline_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Target role(s)",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "candidate_headline_input",
+        "multiline": false,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Example: Staff Product Engineer, AI infra",
+          "emoji": true
+        }
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_location_summary_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Location",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "candidate_location_summary_input",
+        "multiline": false,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Current location and location constraints",
+          "emoji": true
+        }
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_work_arrangement_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Work arrangement preference",
+        "emoji": true
+      },
+      "element": {
+        "type": "static_select",
+        "action_id": "candidate_work_arrangement_select",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select preference",
+          "emoji": true
+        },
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "On-site",
+              "emoji": true
+            },
+            "value": "onsite"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Hybrid",
+              "emoji": true
+            },
+            "value": "hybrid"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Remote",
+              "emoji": true
+            },
+            "value": "remote"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Flexible / mixed",
+              "emoji": true
+            },
+            "value": "flexible"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_availability_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Availability status",
+        "emoji": true
+      },
+      "element": {
+        "type": "static_select",
+        "action_id": "candidate_availability_select",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select availability",
+          "emoji": true
+        },
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Actively interviewing",
+              "emoji": true
+            },
+            "value": "actively_interviewing"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Open to opportunities",
+              "emoji": true
+            },
+            "value": "open_to_opportunities"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Contract / consulting only",
+              "emoji": true
+            },
+            "value": "contract_only"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Cofounder only",
+              "emoji": true
+            },
+            "value": "cofounder_only"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_comp_disclosure_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Compensation disclosure",
+        "emoji": true
+      },
+      "element": {
+        "type": "static_select",
+        "action_id": "candidate_comp_disclosure_select",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select compensation status",
+          "emoji": true
+        },
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Range provided",
+              "emoji": true
+            },
+            "value": "range_provided"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Negotiable / depends",
+              "emoji": true
+            },
+            "value": "negotiable"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not listed",
+              "emoji": true
+            },
+            "value": "not_listed"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Commission / variable",
+              "emoji": true
+            },
+            "value": "performance_based"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_comp_target_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Compensation target",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "candidate_comp_target_input",
+        "multiline": false,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Example: $190k+ base or $120/hr",
+          "emoji": true
+        }
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_visa_policy_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Work authorization / visa",
+        "emoji": true
+      },
+      "element": {
+        "type": "static_select",
+        "action_id": "candidate_visa_policy_select",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select visa context",
+          "emoji": true
+        },
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Can sponsor visa",
+              "emoji": true
+            },
+            "value": "yes"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Cannot sponsor visa",
+              "emoji": true
+            },
+            "value": "no"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Case-by-case",
+              "emoji": true
+            },
+            "value": "case_by_case"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Unknown / not sure",
+              "emoji": true
+            },
+            "value": "unknown"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_relationship_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Poster relationship",
+        "emoji": true
+      },
+      "element": {
+        "type": "static_select",
+        "action_id": "candidate_relationship_select",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select relationship",
+          "emoji": true
+        },
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "I am the candidate",
+              "emoji": true
+            },
+            "value": "candidate_self"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Recruiter posting candidate",
+              "emoji": true
+            },
+            "value": "recruiter"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Other",
+              "emoji": true
+            },
+            "value": "other"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_channel_focus_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Channel focus",
+        "emoji": true
+      },
+      "element": {
+        "type": "static_select",
+        "action_id": "candidate_channel_focus_select",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Auto-pick or override",
+          "emoji": true
+        },
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Auto-pick best channel",
+              "emoji": true
+            },
+            "value": "auto"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "#jobs (general)",
+              "emoji": true
+            },
+            "value": "jobs"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "#onsite-jobs",
+              "emoji": true
+            },
+            "value": "onsite_jobs"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "#remote-jobs",
+              "emoji": true
+            },
+            "value": "remote_jobs"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "#jobs-cofounders",
+              "emoji": true
+            },
+            "value": "jobs_cofounders"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "#jobs-consulting",
+              "emoji": true
+            },
+            "value": "jobs_consulting"
+          }
+        ],
+        "initial_option": {
+          "text": {
+            "type": "plain_text",
+            "text": "Auto-pick best channel",
+            "emoji": true
+          },
+          "value": "auto"
+        }
+      },
+      "optional": false,
+      "hint": {
+        "type": "mrkdwn",
+        "text": "Auto-pick helps route remote, consulting, or cofounder-focused availability."
+      }
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_links_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Links",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "candidate_links_input",
+        "multiline": false,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Portfolio, resume, LinkedIn, GitHub (comma-separated)",
+          "emoji": true
+        }
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_skills_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Skills",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "candidate_skills_input",
+        "multiline": false,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Comma-separated: React, Rails, Product design",
+          "emoji": true
+        }
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_notes_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Notes",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "candidate_notes_input",
+        "multiline": true,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Relevant context for recruiters and hiring managers",
+          "emoji": true
+        }
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_thread_questions_block",
+      "optional": true,
+      "label": {
+        "type": "plain_text",
+        "text": "Thread behavior",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "candidate_thread_questions_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Open to thread replies on this profile",
+              "emoji": true
+            },
+            "value": "allow_thread_questions"
+          }
+        ]
+      }
+    }
+  ]
+}

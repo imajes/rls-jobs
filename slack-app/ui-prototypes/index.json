@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-02-18T23:20:55.297Z",
+  "files": [
+    "job-posting-modal.json",
+    "candidate-profile-modal.json",
+    "job-preview-message.json",
+    "candidate-preview-message.json"
+  ],
+  "notes": [
+    "These files are generated from the current app builders in src/modals.js and src/preview-messages.js.",
+    "For Slack Block Kit Builder, paste modal JSON into the Modal surface, and message JSON into the Message surface.",
+    "Step Two will add final publish payloads and API-ingestion envelopes."
+  ]
+}

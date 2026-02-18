@@ -1,0 +1,50 @@
+{
+  "channel": "U123PREVIEW",
+  "text": "Job preview routed to #onsite-jobs",
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Job Post Preview",
+        "emoji": true
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Company:* Steady Orbit Labs\n*Role:* Senior Platform Engineer\n*Employment type:* full_time\n*Location:* Hybrid in NYC (2 days onsite)\n*Work arrangement:* hybrid\n*Compensation:* $185k - $230k base + equity\n*Visa:* case_by_case\n*Relationship:* hiring_manager\n*Skills:* Ruby, Postgres, AWS, Terraform\n*Link:* https://example.com/jobs/senior-platform-engineer"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Recommended channel: *#onsite-jobs* (onsite_or_hybrid_work_arrangement)"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "Channel ID configured: `C123JOBS`"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Summary*\nBuild and scale data-heavy systems, improve reliability posture, and partner with product engineering teams."
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Step One preview only. Channel posting and API ingestion are wired in Step Two."
+        }
+      ]
+    }
+  ]
+}

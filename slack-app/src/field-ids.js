@@ -1,0 +1,36 @@
+const FIELD_IDS = {
+  job: {
+    companyName: ['job_company_name_block', 'job_company_name_input'],
+    stealthCompany: ['job_stealth_company_block', 'job_stealth_company_checkbox'],
+    roleTitle: ['job_role_title_block', 'job_role_title_input'],
+    employmentType: ['job_employment_type_block', 'job_employment_type_select'],
+    locationSummary: ['job_location_summary_block', 'job_location_summary_input'],
+    workArrangement: ['job_work_arrangement_block', 'job_work_arrangement_select'],
+    compensationDisclosure: ['job_comp_disclosure_block', 'job_comp_disclosure_select'],
+    compensationRange: ['job_comp_range_block', 'job_comp_range_input'],
+    visaPolicy: ['job_visa_policy_block', 'job_visa_policy_select'],
+    relationship: ['job_relationship_block', 'job_relationship_select'],
+    channelFocus: ['job_channel_focus_block', 'job_channel_focus_select'],
+    jobUrl: ['job_url_block', 'job_url_input'],
+    skills: ['job_skills_block', 'job_skills_input'],
+    description: ['job_description_block', 'job_description_input'],
+    allowThreadQuestions: ['job_thread_questions_block', 'job_thread_questions_checkbox'],
+  },
+  candidate: {
+    headline: ['candidate_headline_block', 'candidate_headline_input'],
+    locationSummary: ['candidate_location_summary_block', 'candidate_location_summary_input'],
+    workArrangement: ['candidate_work_arrangement_block', 'candidate_work_arrangement_select'],
+    compensationDisclosure: ['candidate_comp_disclosure_block', 'candidate_comp_disclosure_select'],
+    compensationTarget: ['candidate_comp_target_block', 'candidate_comp_target_input'],
+    visaPolicy: ['candidate_visa_policy_block', 'candidate_visa_policy_select'],
+    relationship: ['candidate_relationship_block', 'candidate_relationship_select'],
+    availabilityStatus: ['candidate_availability_block', 'candidate_availability_select'],
+    channelFocus: ['candidate_channel_focus_block', 'candidate_channel_focus_select'],
+    links: ['candidate_links_block', 'candidate_links_input'],
+    skills: ['candidate_skills_block', 'candidate_skills_input'],
+    notes: ['candidate_notes_block', 'candidate_notes_input'],
+    allowThreadQuestions: ['candidate_thread_questions_block', 'candidate_thread_questions_checkbox'],
+  },
+};
+
+module.exports = { FIELD_IDS };

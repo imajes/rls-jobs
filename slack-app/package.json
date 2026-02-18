@@ -1,26 +1,27 @@
 {
-  "name": "bolt-js-custom-step-template",
+  "name": "rls-jobs-slack-app",
   "version": "1.0.0",
-  "description": "A custom step template for Slack apps",
+  "description": "Structured job and candidate intake Slack app for RLS",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "lint": "npx @biomejs/biome check *.js",
-    "lint:fix": "npx @biomejs/biome check --write *.js"
+    "lint": "npx @biomejs/biome check .",
+    "lint:fix": "npx @biomejs/biome check --write .",
+    "export:ui": "node scripts/export-ui-prototypes.js"
   },
-  "author": "Slack Technologies, LLC",
+  "author": "RLS Jobs",
   "license": "MIT",
   "keywords": [
     "slack",
     "bolt",
-    "slackapi"
+    "jobs"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/slack-samples/bolt-js-custom-step-template.git"
+    "url": "https://github.com/example/rls-jobs.git"
   },
   "bugs": {
-    "url": "https://github.com/slack-samples/bolt-js-custom-step-template/issues"
+    "url": "https://github.com/example/rls-jobs/issues"
   },
   "dependencies": {
     "@slack/bolt": "4.6.0",

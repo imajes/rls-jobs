@@ -1,0 +1,50 @@
+{
+  "channel": "U123PREVIEW",
+  "text": "Candidate preview routed to #remote-jobs",
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Candidate Post Preview",
+        "emoji": true
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Target role(s):* Staff Product Engineer / Engineering Manager\n*Location:* Seattle, WA, open to remote roles in US time zones\n*Work preference:* remote\n*Availability:* open_to_opportunities\n*Compensation:* $210k+ base, open to total comp discussion\n*Visa/work authorization:* unknown\n*Relationship:* candidate_self\n*Skills:* JavaScript, TypeScript, Rails, Product strategy\n*Links:* https://linkedin.com/in/example, https://github.com/example"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Recommended channel: *#remote-jobs* (candidate_remote_preference)"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "Channel ID configured: `C456REMOTE`"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Notes*\nOpen to senior IC and EM roles at mission-driven companies."
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Step One preview only. Channel posting and API ingestion are wired in Step Two."
+        }
+      ]
+    }
+  ]
+}
