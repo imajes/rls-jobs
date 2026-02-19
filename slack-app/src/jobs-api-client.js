@@ -11,7 +11,7 @@ async function postIntakeEvent(config, payload, logger) {
   try {
     const headers = {
       'Content-Type': 'application/json',
-      'User-Agent': 'rls-jobs-slack-app/step-two',
+      'User-Agent': 'rls-jobs-slack-app/step-four',
     };
 
     if (config.jobsApi.token) {

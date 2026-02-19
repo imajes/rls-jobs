@@ -204,6 +204,47 @@ function messageForPosting(posting) {
   return candidatePublishedMessage(posting.channelId, posting.values, posting.id, posting.posterUserId);
 }
 
+function buildIngestPayload({
+  eventType,
+  previewId = '',
+  posting,
+  teamId = '',
+  actorUserId = '',
+  values = {},
+  extra = {},
+}) {
+  const channelLabel = CHANNEL_LABELS[posting.channelFocus] || '#jobs';
+
+  return {
+    eventType,
+    kind: posting.kind,
+    previewId,
+    postingId: posting.id,
+    permalink: posting.permalink || '',
+    route: {
+      channelFocus: posting.channelFocus || '',
+      channelId: posting.channelId || '',
+      channelLabel,
+    },
+    slack: {
+      teamId,
+      previewDmChannelId: extra.previewDmChannelId || '',
+      previewDmMessageTs: extra.previewDmMessageTs || '',
+      publishedMessageTs: posting.messageTs || '',
+      publishedByUserId: actorUserId,
+    },
+    values,
+    ...extra,
+  };
+}
+
+async function postLifecycleIngestEvent(config, logger, payload) {
+  const ingestResult = await postIntakeEvent(config, payload, logger);
+  if (!ingestResult.sent && ingestResult.reason !== 'not_configured') {
+    logger.warn(`jobs_api_ingest_not_sent reason=${ingestResult.reason} event=${payload.eventType}`);
+  }
+}
+
 function postingFromAction(body) {
   const actionValue = body.actions?.[0]?.value || '';
   const postingId = parsePostingActionValue(actionValue, body);
@@ -287,34 +328,23 @@ async function publishPreview({ body, client, config, logger, previewId, expecte
 
   await publishHome(client, body.user.id, logger);
 
-  const ingestResult = await postIntakeEvent(
+  await postLifecycleIngestEvent(
     config,
-    {
+    logger,
+    buildIngestPayload({
       eventType: 'slack_post_published',
-      kind: preview.kind,
       previewId: preview.id,
-      postingId: posting.id,
-      postedAt: new Date().toISOString(),
-      route: {
-        channelFocus,
-        channelId: routedChannelId,
-        channelLabel: label,
-      },
-      slack: {
-        teamId: body.team?.id || '',
+      posting,
+      teamId: body.team?.id || '',
+      actorUserId: body.user.id,
+      values: preview.values,
+      extra: {
+        postedAt: new Date().toISOString(),
         previewDmChannelId: body.container?.channel_id || '',
         previewDmMessageTs: body.container?.message_ts || '',
-        publishedMessageTs: posted.ts || '',
-        publishedByUserId: body.user.id,
       },
-      values: preview.values,
-    },
-    logger,
+    }),
   );
-
-  if (!ingestResult.sent && ingestResult.reason !== 'not_configured') {
-    logger.warn(`jobs_api_ingest_not_sent reason=${ingestResult.reason}`);
-  }
 }
 
 function registerHandlers(app, config) {
@@ -631,18 +661,34 @@ function registerHandlers(app, config) {
       return;
     }
 
-    archivePosting(posting.id, body.user.id);
+    const archived = archivePosting(posting.id, body.user.id);
 
     try {
-      const archivedMessage = archivedPostingMessage(posting);
+      const archivedMessage = archivedPostingMessage(archived);
       await client.chat.update({
-        channel: posting.channelId,
-        ts: posting.messageTs,
+        channel: archived.channelId,
+        ts: archived.messageTs,
         text: archivedMessage.text,
         blocks: archivedMessage.blocks,
       });
       await sendDm(client, body.user.id, 'Posting archived.');
       await publishHome(client, body.user.id, logger);
+
+      await postLifecycleIngestEvent(
+        config,
+        logger,
+        buildIngestPayload({
+          eventType: 'slack_post_archived',
+          posting: archived,
+          teamId: body.team?.id || '',
+          actorUserId: body.user.id,
+          values: archived.values,
+          extra: {
+            archivedAt: new Date().toISOString(),
+            archivedByUserId: body.user.id,
+          },
+        }),
+      );
     } catch (error) {
       logger.error(error);
     }
@@ -692,6 +738,21 @@ function registerHandlers(app, config) {
       });
       await sendDm(client, body.user.id, 'Posting updated.');
       await publishHome(client, body.user.id, logger);
+
+      await postLifecycleIngestEvent(
+        config,
+        logger,
+        buildIngestPayload({
+          eventType: 'slack_post_updated',
+          posting: updated,
+          teamId: body.team?.id || '',
+          actorUserId: body.user.id,
+          values: updated.values,
+          extra: {
+            updatedAt: new Date().toISOString(),
+          },
+        }),
+      );
     } catch (error) {
       logger.error(error);
       await sendDm(client, body.user.id, 'Could not update the posted message. Please try again.');
@@ -742,6 +803,21 @@ function registerHandlers(app, config) {
       });
       await sendDm(client, body.user.id, 'Posting updated.');
       await publishHome(client, body.user.id, logger);
+
+      await postLifecycleIngestEvent(
+        config,
+        logger,
+        buildIngestPayload({
+          eventType: 'slack_post_updated',
+          posting: updated,
+          teamId: body.team?.id || '',
+          actorUserId: body.user.id,
+          values: updated.values,
+          extra: {
+            updatedAt: new Date().toISOString(),
+          },
+        }),
+      );
     } catch (error) {
       logger.error(error);
       await sendDm(client, body.user.id, 'Could not update the posted message. Please try again.');
