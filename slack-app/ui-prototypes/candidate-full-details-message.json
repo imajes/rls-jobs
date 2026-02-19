@@ -13,49 +13,89 @@
   },
   "blocks": [
     {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Staff Product Engineer / Engineering Manager",
+        "emoji": true
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Quick Snapshot",
+        "emoji": true
+      }
+    },
+    {
       "type": "rich_text",
       "elements": [
         {
-          "type": "rich_text_section",
+          "type": "rich_text_list",
+          "border": 1,
+          "indent": 0,
+          "style": "bullet",
           "elements": [
             {
-              "type": "text",
-              "text": "Staff Product Engineer / Engineering Manager",
-              "style": {
-                "bold": true
-              }
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "📍 Seattle, WA, open to US remote roles"
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "💼 Full-time, Contract"
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "🕒 Open to opportunities"
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "💸 $210k+ base + Equity + Bonus"
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "🛂 Work authorization: Prefer not to say"
+                }
+              ]
             }
           ]
         }
       ]
     },
     {
-      "type": "context",
-      "elements": [
-        {
-          "type": "plain_text",
-          "text": "📍 Seattle, WA, open to US remote roles",
-          "emoji": true
-        },
-        {
-          "type": "plain_text",
-          "text": "💼 Full-time, Contract",
-          "emoji": true
-        },
-        {
-          "type": "plain_text",
-          "text": "🕒 Open to opportunities",
-          "emoji": true
-        },
-        {
-          "type": "plain_text",
-          "text": "💸 $210k+ base + Equity + Bonus",
-          "emoji": true
-        }
-      ]
-    },
-    {
-      "type": "divider"
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Focus Areas",
+        "emoji": true
+      }
     },
     {
       "type": "rich_text",
@@ -69,7 +109,7 @@
               "elements": [
                 {
                   "type": "text",
-                  "text": "Work arrangements: Remote, Hybrid"
+                  "text": "Preferred work setup: Remote, Hybrid"
                 }
               ]
             },
@@ -78,7 +118,34 @@
               "elements": [
                 {
                   "type": "text",
-                  "text": "Work authorization: Prefer not to say"
+                  "text": "JavaScript"
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "TypeScript"
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "Rails"
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "Product strategy"
                 }
               ]
             }
@@ -89,6 +156,27 @@
     {
       "type": "rich_text",
       "elements": [
+        {
+          "type": "rich_text_section",
+          "elements": [
+            {
+              "type": "text",
+              "text": "  "
+            }
+          ]
+        },
+        {
+          "type": "rich_text_section",
+          "elements": [
+            {
+              "type": "text",
+              "text": "Additional context from the candidate:",
+              "style": {
+                "italic": true
+              }
+            }
+          ]
+        },
         {
           "type": "rich_text_quote",
           "elements": [
@@ -104,40 +192,67 @@
       "type": "divider"
     },
     {
-      "type": "section",
+      "type": "header",
       "text": {
-        "type": "mrkdwn",
-        "text": "*Links*"
+        "type": "plain_text",
+        "text": "Portfolio & Contact Links",
+        "emoji": true
       }
     },
     {
       "type": "section",
       "text": {
-        "type": "mrkdwn",
-        "text": "<https://linkedin.com/in/example|https://linkedin.com/in/example>"
+        "type": "plain_text",
+        "text": "Primary Link",
+        "emoji": true
+      },
+      "accessory": {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "text": "Open Link",
+          "emoji": true
+        },
+        "url": "https://linkedin.com/in/example",
+        "action_id": "candidate_details_link_1"
       }
     },
     {
       "type": "section",
       "text": {
-        "type": "mrkdwn",
-        "text": "<https://github.com/example|https://github.com/example>"
+        "type": "plain_text",
+        "text": "https://linkedin.com/in/example",
+        "emoji": true
       }
     },
     {
-      "type": "actions",
-      "elements": [
-        {
-          "type": "button",
-          "action_id": "candidate_details_save",
-          "text": {
-            "type": "plain_text",
-            "text": "Save to My List",
-            "emoji": true
-          },
-          "value": "candidate_preview_001"
-        }
-      ]
+      "type": "divider"
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "plain_text",
+        "text": "Additional Link",
+        "emoji": true
+      },
+      "accessory": {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "text": "Open Link",
+          "emoji": true
+        },
+        "url": "https://github.com/example",
+        "action_id": "candidate_details_link_2"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "plain_text",
+        "text": "https://github.com/example",
+        "emoji": true
+      }
     }
   ]
 }

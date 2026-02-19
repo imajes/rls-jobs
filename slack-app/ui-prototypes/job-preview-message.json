@@ -81,26 +81,6 @@
           "value": "job_preview_001"
         },
         {
-          "type": "button",
-          "action_id": "job_card_quick_apply",
-          "text": {
-            "type": "plain_text",
-            "text": "Quick Apply",
-            "emoji": true
-          },
-          "value": "job_preview_001"
-        },
-        {
-          "type": "button",
-          "action_id": "job_card_save",
-          "text": {
-            "type": "plain_text",
-            "text": "Save",
-            "emoji": true
-          },
-          "value": "job_preview_001"
-        },
-        {
           "type": "overflow",
           "action_id": "job_card_route_channel",
           "options": [

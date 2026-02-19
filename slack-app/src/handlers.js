@@ -151,7 +151,7 @@ function registerHandlers(app, config) {
       return;
     }
 
-    const values = { ...metadata.data, ...stepData };
+    const values = { ...metadata.data, ...stepData, posterUserId: body.user.id };
     await ack();
 
     const recommendation = recommendChannel(POST_KIND.JOB, values);
@@ -218,7 +218,7 @@ function registerHandlers(app, config) {
       return;
     }
 
-    const values = { ...metadata.data, ...stepData };
+    const values = { ...metadata.data, ...stepData, posterUserId: body.user.id };
     await ack();
 
     const recommendation = recommendChannel(POST_KIND.CANDIDATE, values);
@@ -247,7 +247,7 @@ function registerHandlers(app, config) {
     }
 
     try {
-      await openModal(client, body.trigger_id, buildJobDetailsModal(preview.values, previewId));
+      await openModal(client, body.trigger_id, buildJobDetailsModal(preview.values));
     } catch (error) {
       logger.error(error);
     }
@@ -264,7 +264,7 @@ function registerHandlers(app, config) {
     }
 
     try {
-      await openModal(client, body.trigger_id, buildCandidateDetailsModal(preview.values, previewId));
+      await openModal(client, body.trigger_id, buildCandidateDetailsModal(preview.values));
     } catch (error) {
       logger.error(error);
     }

@@ -13,59 +13,79 @@
   },
   "blocks": [
     {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Senior Platform Engineer at Steady Orbit Labs",
+        "emoji": true
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Key Info",
+        "emoji": true
+      }
+    },
+    {
       "type": "rich_text",
       "elements": [
         {
-          "type": "rich_text_section",
+          "type": "rich_text_list",
+          "border": 1,
+          "indent": 0,
+          "style": "bullet",
           "elements": [
             {
-              "type": "text",
-              "text": "Senior Platform Engineer",
-              "style": {
-                "bold": true
-              }
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "📍 Hybrid in NYC (2 days onsite)"
+                }
+              ]
             },
             {
-              "type": "text",
-              "text": " at Steady Orbit Labs"
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "💼 Full-time, Contract"
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "💸 $185k-$230k USD + Equity + Bonus"
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "🛂 Visa: Case-by-case"
+                }
+              ]
             }
           ]
         }
       ]
     },
     {
-      "type": "context",
-      "elements": [
-        {
-          "type": "plain_text",
-          "text": "📍 Hybrid in NYC (2 days onsite)",
-          "emoji": true
-        },
-        {
-          "type": "plain_text",
-          "text": "💼 Full-time, Contract",
-          "emoji": true
-        },
-        {
-          "type": "plain_text",
-          "text": "💸 $185k-$230k USD + Equity + Bonus",
-          "emoji": true
-        },
-        {
-          "type": "plain_text",
-          "text": "🛂 Visa: Case-by-case",
-          "emoji": true
-        }
-      ]
-    },
-    {
-      "type": "divider"
-    },
-    {
-      "type": "section",
+      "type": "header",
       "text": {
-        "type": "mrkdwn",
-        "text": "*Why this role matters*"
+        "type": "plain_text",
+        "text": "Role Highlights",
+        "emoji": true
       }
     },
     {
@@ -110,6 +130,27 @@
       "type": "rich_text",
       "elements": [
         {
+          "type": "rich_text_section",
+          "elements": [
+            {
+              "type": "text",
+              "text": "  "
+            }
+          ]
+        },
+        {
+          "type": "rich_text_section",
+          "elements": [
+            {
+              "type": "text",
+              "text": "Additional context from the poster:",
+              "style": {
+                "italic": true
+              }
+            }
+          ]
+        },
+        {
           "type": "rich_text_quote",
           "elements": [
             {
@@ -124,16 +165,25 @@
       "type": "divider"
     },
     {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "More Info & How to Apply",
+        "emoji": true
+      }
+    },
+    {
       "type": "section",
       "text": {
-        "type": "mrkdwn",
-        "text": "*Apply Link*"
+        "type": "plain_text",
+        "text": "Apply Link",
+        "emoji": true
       },
       "accessory": {
         "type": "button",
         "text": {
           "type": "plain_text",
-          "text": "Open Role",
+          "text": "🚀 Open Role",
           "emoji": true
         },
         "url": "https://example.com/jobs/senior-platform-engineer",
@@ -143,15 +193,20 @@
     {
       "type": "section",
       "text": {
-        "type": "mrkdwn",
-        "text": "<https://example.com/jobs/senior-platform-engineer|https://example.com/jobs/senior-platform-engineer>"
+        "type": "plain_text",
+        "text": "https://example.com/jobs/senior-platform-engineer",
+        "emoji": true
       }
+    },
+    {
+      "type": "divider"
     },
     {
       "type": "section",
       "text": {
-        "type": "mrkdwn",
-        "text": "*Additional Link*"
+        "type": "plain_text",
+        "text": "Additional Link",
+        "emoji": true
       },
       "accessory": {
         "type": "button",
@@ -167,35 +222,10 @@
     {
       "type": "section",
       "text": {
-        "type": "mrkdwn",
-        "text": "<https://steadyorbitlabs.com/careers/platform-engineering|https://steadyorbitlabs.com/careers/platform-engineering>"
+        "type": "plain_text",
+        "text": "https://steadyorbitlabs.com/careers/platform-eng...",
+        "emoji": true
       }
-    },
-    {
-      "type": "actions",
-      "elements": [
-        {
-          "type": "button",
-          "action_id": "job_details_quick_apply",
-          "text": {
-            "type": "plain_text",
-            "text": "Quick Apply",
-            "emoji": true
-          },
-          "style": "primary",
-          "value": "job_preview_001"
-        },
-        {
-          "type": "button",
-          "action_id": "job_details_save",
-          "text": {
-            "type": "plain_text",
-            "text": "Save to My List",
-            "emoji": true
-          },
-          "value": "job_preview_001"
-        }
-      ]
     }
   ]
 }

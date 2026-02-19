@@ -13,6 +13,16 @@ function toLabelList(values, labelMap) {
   return (values || []).map((value) => labelMap[value] || value).join(', ');
 }
 
+function shortenUrl(url) {
+  try {
+    const parsed = new URL(url);
+    const path = parsed.pathname.length > 24 ? `${parsed.pathname.slice(0, 21)}...` : parsed.pathname;
+    return `${parsed.origin}${path}`;
+  } catch (_error) {
+    return url;
+  }
+}
+
 function humanComp(values) {
   const base = values.compensationValue || 'Compensation not listed';
   const components = values.compensationComponents || [];
@@ -23,22 +33,24 @@ function humanComp(values) {
   return `${base} + ${components.map((component) => component.charAt(0).toUpperCase() + component.slice(1)).join(' + ')}`;
 }
 
-function jobLinkSections(values, previewId) {
+function jobLinkSections(values) {
   const links = splitLinks(values.links);
   if (!links.length) {
-    return [];
+    return [
+      {
+        type: 'section',
+        text: plainText('No external links were included in this post.'),
+      },
+    ];
   }
 
   const sections = [];
-  for (const [index, link] of links.slice(0, 2).entries()) {
+  for (const [index, link] of links.slice(0, 4).entries()) {
     const label = index === 0 ? 'Apply Link' : 'Additional Link';
-    const buttonLabel = index === 0 ? 'Open Role' : 'Open Link';
+    const buttonLabel = index === 0 ? '🚀 Open Role' : 'Open Link';
     sections.push({
       type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: `*${label}*`,
-      },
+      text: plainText(label),
       accessory: {
         type: 'button',
         text: plainText(buttonLabel),
@@ -48,132 +60,202 @@ function jobLinkSections(values, previewId) {
     });
     sections.push({
       type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: `<${link}|${link}>`,
-      },
+      text: plainText(index === 0 ? link : shortenUrl(link)),
     });
+    if (index < Math.min(links.length, 4) - 1) {
+      sections.push({
+        type: 'divider',
+      });
+    }
   }
 
-  sections.push({
-    type: 'actions',
-    elements: [
-      {
-        type: 'button',
-        action_id: 'job_details_quick_apply',
-        text: plainText('Quick Apply'),
-        style: 'primary',
-        value: previewId,
-      },
-      {
-        type: 'button',
-        action_id: 'job_details_save',
-        text: plainText('Save to My List'),
-        value: previewId,
-      },
-    ],
-  });
+  if (links.length > 4) {
+    sections.push({
+      type: 'context',
+      elements: [
+        plainText(
+          `+${links.length - 4} more link${links.length - 4 === 1 ? '' : 's'} were included in the original post.`,
+        ),
+      ],
+    });
+  }
 
   return sections;
 }
 
-function candidateLinkSections(values, previewId) {
+function candidateLinkSections(values) {
   const links = splitLinks(values.links);
   if (!links.length) {
     return [
       {
-        type: 'actions',
+        type: 'section',
+        text: plainText('No external links were included in this profile.'),
+      },
+    ];
+  }
+
+  const sections = [];
+  for (const [index, link] of links.slice(0, 4).entries()) {
+    const label = index === 0 ? 'Primary Link' : 'Additional Link';
+    sections.push({
+      type: 'section',
+      text: plainText(label),
+      accessory: {
+        type: 'button',
+        text: plainText('Open Link'),
+        url: link,
+        action_id: `candidate_details_link_${index + 1}`,
+      },
+    });
+    sections.push({
+      type: 'section',
+      text: plainText(shortenUrl(link)),
+    });
+    if (index < Math.min(links.length, 4) - 1) {
+      sections.push({
+        type: 'divider',
+      });
+    }
+  }
+
+  if (links.length > 4) {
+    sections.push({
+      type: 'context',
+      elements: [
+        plainText(
+          `+${links.length - 4} more link${links.length - 4 === 1 ? '' : 's'} were included in the original post.`,
+        ),
+      ],
+    });
+  }
+
+  return sections;
+}
+
+function profileHighlights(values) {
+  const rawSkills = (values.skills || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  if (!rawSkills.length) {
+    return [
+      {
+        type: 'rich_text_section',
         elements: [
           {
-            type: 'button',
-            action_id: 'candidate_details_save',
-            text: plainText('Save to My List'),
-            value: previewId,
+            type: 'text',
+            text: 'No specific skills were listed.',
           },
         ],
       },
     ];
   }
 
-  const sections = [
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: '*Links*',
-      },
-    },
-  ];
-
-  for (const link of links.slice(0, 3)) {
-    sections.push({
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: `<${link}|${link}>`,
-      },
-    });
-  }
-
-  sections.push({
-    type: 'actions',
+  return rawSkills.slice(0, 5).map((skill) => ({
+    type: 'rich_text_section',
     elements: [
       {
-        type: 'button',
-        action_id: 'candidate_details_save',
-        text: plainText('Save to My List'),
-        value: previewId,
+        type: 'text',
+        text: skill,
       },
     ],
-  });
-
-  return sections;
+  }));
 }
 
-function buildJobDetailsModal(values, previewId) {
+function buildJobDetailsModal(values) {
   const arrangementText = toLabelList(values.workArrangements, labels.workArrangement) || 'Not specified';
   const employmentText = toLabelList(values.employmentTypes, labels.employmentType) || 'Not specified';
+  const roleTitle = values.roleTitle || 'Role';
+  const companyName = values.companyName || 'Company';
+  const contextPrefix = values.posterUserId
+    ? [
+        {
+          type: 'user',
+          user_id: values.posterUserId,
+        },
+        {
+          type: 'text',
+          text: ' added this about the role: ',
+          style: {
+            italic: true,
+          },
+        },
+      ]
+    : [
+        {
+          type: 'text',
+          text: 'Additional context from the poster:',
+          style: {
+            italic: true,
+          },
+        },
+      ];
 
   const blocks = [
+    {
+      type: 'header',
+      text: plainText(`${roleTitle} at ${companyName}`),
+    },
+    {
+      type: 'divider',
+    },
+    {
+      type: 'header',
+      text: plainText('Key Info'),
+    },
     {
       type: 'rich_text',
       elements: [
         {
-          type: 'rich_text_section',
+          type: 'rich_text_list',
+          border: 1,
+          indent: 0,
+          style: 'bullet',
           elements: [
             {
-              type: 'text',
-              text: values.roleTitle || 'Role',
-              style: {
-                bold: true,
-              },
+              type: 'rich_text_section',
+              elements: [
+                {
+                  type: 'text',
+                  text: `📍 ${values.locationSummary || 'Location TBD'}`,
+                },
+              ],
             },
             {
-              type: 'text',
-              text: ` at ${values.companyName || 'Company'}`,
+              type: 'rich_text_section',
+              elements: [
+                {
+                  type: 'text',
+                  text: `💼 ${employmentText}`,
+                },
+              ],
+            },
+            {
+              type: 'rich_text_section',
+              elements: [
+                {
+                  type: 'text',
+                  text: `💸 ${humanComp(values)}`,
+                },
+              ],
+            },
+            {
+              type: 'rich_text_section',
+              elements: [
+                {
+                  type: 'text',
+                  text: `🛂 Visa: ${labels.visa[values.visaPolicy] || 'Unknown'}`,
+                },
+              ],
             },
           ],
         },
       ],
     },
     {
-      type: 'context',
-      elements: [
-        plainText(`📍 ${values.locationSummary || 'Location TBD'}`),
-        plainText(`💼 ${employmentText}`),
-        plainText(`💸 ${humanComp(values)}`),
-        plainText(`🛂 Visa: ${labels.visa[values.visaPolicy] || 'Unknown'}`),
-      ],
-    },
-    {
-      type: 'divider',
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: '*Why this role matters*',
-      },
+      type: 'header',
+      text: plainText('Role Highlights'),
     },
     {
       type: 'rich_text',
@@ -215,28 +297,44 @@ function buildJobDetailsModal(values, previewId) {
     },
   ];
 
-  if (values.summary) {
-    blocks.push({
-      type: 'rich_text',
-      elements: [
-        {
-          type: 'rich_text_quote',
-          elements: [
-            {
-              type: 'text',
-              text: values.summary,
-            },
-          ],
-        },
-      ],
-    });
-  }
+  blocks.push({
+    type: 'rich_text',
+    elements: [
+      {
+        type: 'rich_text_section',
+        elements: [
+          {
+            type: 'text',
+            text: '  ',
+          },
+        ],
+      },
+      {
+        type: 'rich_text_section',
+        elements: contextPrefix,
+      },
+      {
+        type: 'rich_text_quote',
+        elements: [
+          {
+            type: 'text',
+            text: values.summary || 'No additional summary provided.',
+          },
+        ],
+      },
+    ],
+  });
 
   blocks.push({
     type: 'divider',
   });
 
-  blocks.push(...jobLinkSections(values, previewId));
+  blocks.push({
+    type: 'header',
+    text: plainText('More Info & How to Apply'),
+  });
+
+  blocks.push(...jobLinkSections(values));
 
   return {
     type: 'modal',
@@ -247,40 +345,107 @@ function buildJobDetailsModal(values, previewId) {
   };
 }
 
-function buildCandidateDetailsModal(values, previewId) {
+function buildCandidateDetailsModal(values) {
   const arrangementText = toLabelList(values.workArrangements, labels.workArrangement) || 'Not specified';
   const availabilityText = toLabelList(values.availabilityModes, labels.candidateAvailability) || 'Not specified';
   const engagementText = toLabelList(values.engagementTypes, labels.employmentType) || 'Not specified';
+  const contextPrefix = values.posterUserId
+    ? [
+        {
+          type: 'user',
+          user_id: values.posterUserId,
+        },
+        {
+          type: 'text',
+          text: ' shared this candidate context: ',
+          style: {
+            italic: true,
+          },
+        },
+      ]
+    : [
+        {
+          type: 'text',
+          text: 'Additional context from the candidate:',
+          style: {
+            italic: true,
+          },
+        },
+      ];
 
   const blocks = [
+    {
+      type: 'header',
+      text: plainText(values.headline || 'Candidate profile'),
+    },
+    {
+      type: 'divider',
+    },
+    {
+      type: 'header',
+      text: plainText('Quick Snapshot'),
+    },
     {
       type: 'rich_text',
       elements: [
         {
-          type: 'rich_text_section',
+          type: 'rich_text_list',
+          border: 1,
+          indent: 0,
+          style: 'bullet',
           elements: [
             {
-              type: 'text',
-              text: values.headline || 'Candidate profile',
-              style: {
-                bold: true,
-              },
+              type: 'rich_text_section',
+              elements: [
+                {
+                  type: 'text',
+                  text: `📍 ${values.locationSummary || 'Location TBD'}`,
+                },
+              ],
+            },
+            {
+              type: 'rich_text_section',
+              elements: [
+                {
+                  type: 'text',
+                  text: `💼 ${engagementText}`,
+                },
+              ],
+            },
+            {
+              type: 'rich_text_section',
+              elements: [
+                {
+                  type: 'text',
+                  text: `🕒 ${availabilityText}`,
+                },
+              ],
+            },
+            {
+              type: 'rich_text_section',
+              elements: [
+                {
+                  type: 'text',
+                  text: `💸 ${humanComp(values)}`,
+                },
+              ],
+            },
+            {
+              type: 'rich_text_section',
+              elements: [
+                {
+                  type: 'text',
+                  text: `🛂 Work authorization: ${labels.visa[values.visaPolicy] || 'Unknown'}`,
+                },
+              ],
             },
           ],
         },
       ],
     },
     {
-      type: 'context',
-      elements: [
-        plainText(`📍 ${values.locationSummary || 'Location TBD'}`),
-        plainText(`💼 ${engagementText}`),
-        plainText(`🕒 ${availabilityText}`),
-        plainText(`💸 ${humanComp(values)}`),
-      ],
-    },
-    {
-      type: 'divider',
+      type: 'header',
+      text: plainText('Focus Areas'),
     },
     {
       type: 'rich_text',
@@ -294,46 +459,53 @@ function buildCandidateDetailsModal(values, previewId) {
               elements: [
                 {
                   type: 'text',
-                  text: `Work arrangements: ${arrangementText}`,
+                  text: `Preferred work setup: ${arrangementText}`,
                 },
               ],
             },
-            {
-              type: 'rich_text_section',
-              elements: [
-                {
-                  type: 'text',
-                  text: `Work authorization: ${labels.visa[values.visaPolicy] || 'Unknown'}`,
-                },
-              ],
-            },
+            ...profileHighlights(values),
           ],
         },
       ],
     },
   ];
 
-  if (values.notes) {
-    blocks.push({
-      type: 'rich_text',
-      elements: [
-        {
-          type: 'rich_text_quote',
-          elements: [
-            {
-              type: 'text',
-              text: values.notes,
-            },
-          ],
-        },
-      ],
-    });
-  }
+  blocks.push({
+    type: 'rich_text',
+    elements: [
+      {
+        type: 'rich_text_section',
+        elements: [
+          {
+            type: 'text',
+            text: '  ',
+          },
+        ],
+      },
+      {
+        type: 'rich_text_section',
+        elements: contextPrefix,
+      },
+      {
+        type: 'rich_text_quote',
+        elements: [
+          {
+            type: 'text',
+            text: values.notes || 'No additional candidate notes were included.',
+          },
+        ],
+      },
+    ],
+  });
 
   blocks.push({
     type: 'divider',
   });
-  blocks.push(...candidateLinkSections(values, previewId));
+  blocks.push({
+    type: 'header',
+    text: plainText('Portfolio & Contact Links'),
+  });
+  blocks.push(...candidateLinkSections(values));
 
   return {
     type: 'modal',

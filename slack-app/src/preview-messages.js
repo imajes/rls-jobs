@@ -1,6 +1,5 @@
 const { CHANNEL_LABELS } = require('./channel-routing');
 const { labels } = require('./constants');
-const { splitLinks } = require('./validation');
 
 function toLabelList(values, labelMap) {
   return (values || []).map((value) => labelMap[value] || value);
@@ -24,10 +23,6 @@ function candidateHeadline(values) {
   return `${values.headline || 'Candidate'}, ${values.locationSummary || 'Location TBD'}`;
 }
 
-function firstLink(values) {
-  return splitLinks(values.links)[0] || '';
-}
-
 function routeOptions(previewId) {
   return Object.entries(CHANNEL_LABELS).map(([key, label]) => ({
     text: {
@@ -43,7 +38,6 @@ function jobPreviewMessage(userId, values, recommendation, routedChannelId, prev
   const employment = toLabelList(values.employmentTypes, labels.employmentType).join(', ') || 'Not specified';
   const visa = labels.visa[values.visaPolicy] || 'Not specified';
   const summary = values.summary || 'No summary provided.';
-  const applyLink = firstLink(values);
 
   const actions = [
     {
@@ -57,36 +51,33 @@ function jobPreviewMessage(userId, values, recommendation, routedChannelId, prev
       style: 'primary',
       value: previewId,
     },
-    {
-      type: 'button',
-      action_id: 'job_card_quick_apply',
-      text: {
-        type: 'plain_text',
-        text: 'Quick Apply',
-        emoji: true,
-      },
-      value: previewId,
-    },
-    {
-      type: 'button',
-      action_id: 'job_card_save',
-      text: {
-        type: 'plain_text',
-        text: 'Save',
-        emoji: true,
-      },
-      value: previewId,
-    },
+    // TODO: Re-enable when shortlist/apply workflows are implemented.
+    // {
+    //   type: 'button',
+    //   action_id: 'job_card_quick_apply',
+    //   text: {
+    //     type: 'plain_text',
+    //     text: 'Quick Apply',
+    //     emoji: true,
+    //   },
+    //   value: previewId,
+    // },
+    // {
+    //   type: 'button',
+    //   action_id: 'job_card_save',
+    //   text: {
+    //     type: 'plain_text',
+    //     text: 'Save',
+    //     emoji: true,
+    //   },
+    //   value: previewId,
+    // },
     {
       type: 'overflow',
       action_id: 'job_card_route_channel',
       options: routeOptions(previewId),
     },
   ];
-
-  if (!applyLink) {
-    actions.splice(1, 1);
-  }
 
   return {
     channel: userId,
@@ -256,16 +247,17 @@ function candidatePreviewMessage(userId, values, recommendation, routedChannelId
             style: 'primary',
             value: previewId,
           },
-          {
-            type: 'button',
-            action_id: 'candidate_card_save',
-            text: {
-              type: 'plain_text',
-              text: 'Save',
-              emoji: true,
-            },
-            value: previewId,
-          },
+          // TODO: Re-enable when saved-candidates workflow is implemented.
+          // {
+          //   type: 'button',
+          //   action_id: 'candidate_card_save',
+          //   text: {
+          //     type: 'plain_text',
+          //     text: 'Save',
+          //     emoji: true,
+          //   },
+          //   value: previewId,
+          // },
           {
             type: 'overflow',
             action_id: 'candidate_card_route_channel',
