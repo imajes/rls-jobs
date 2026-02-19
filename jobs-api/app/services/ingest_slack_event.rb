@@ -24,7 +24,7 @@ class IngestSlackEvent
     existing_event = IntakeEvent.find_by(event_fingerprint: fingerprint)
     if existing_event
       posting = Posting.find_by(external_posting_id: existing_event.external_posting_id)
-      return Result.new(posting:, intake_event: existing_event, duplicate: true, errors: [])
+      return Result.new(posting: posting, intake_event: existing_event, duplicate: true, errors: [])
     end
 
     posting = nil
@@ -33,7 +33,7 @@ class IngestSlackEvent
     ActiveRecord::Base.transaction do
       posting = upsert_posting!
       intake_event = IntakeEvent.create!(
-        posting:,
+        posting: posting,
         event_fingerprint: fingerprint,
         event_type: payload['eventType'],
         kind: payload['kind'],
@@ -45,16 +45,16 @@ class IngestSlackEvent
         published_message_ts: slack_value('publishedMessageTs'),
         user_id: slack_value('publishedByUserId'),
         occurred_at: event_time,
-        received_at:,
+        received_at: received_at,
         payload: JSON.generate(payload)
       )
     end
 
-    Result.new(posting:, intake_event:, duplicate: false, errors: [])
+    Result.new(posting: posting, intake_event: intake_event, duplicate: false, errors: [])
   rescue ActiveRecord::RecordNotUnique
     existing = IntakeEvent.find_by(event_fingerprint: fingerprint)
     posting = Posting.find_by(external_posting_id: existing&.external_posting_id)
-    Result.new(posting:, intake_event: existing, duplicate: true, errors: [])
+    Result.new(posting: posting, intake_event: existing, duplicate: true, errors: [])
   rescue ActiveRecord::RecordInvalid => e
     Result.new(posting: nil, intake_event: nil, duplicate: false, errors: [e.message])
   rescue StandardError => e
@@ -112,7 +112,7 @@ class IngestSlackEvent
     posting.relationship = values['relationship']
     posting.skills = values['skills']
     posting.summary = values['summary'] || values['notes']
-    posting.search_text = build_search_text(values)
+    posting.search_text = Posting.search_text_from_values(values)
 
     posting.values_payload = JSON.generate(values)
     posting.last_payload = JSON.generate(payload)
@@ -166,25 +166,5 @@ class IngestSlackEvent
     else
       value
     end
-  end
-
-  def build_search_text(values)
-    fragments = [
-      values['companyName'],
-      values['roleTitle'],
-      values['headline'],
-      values['locationSummary'],
-      values['summary'],
-      values['notes'],
-      values['skills'],
-      Array(values['workArrangements']).join(' '),
-      Array(values['employmentTypes']).join(' '),
-      Array(values['engagementTypes']).join(' '),
-      Array(values['availabilityModes']).join(' '),
-      values['compensationValue'],
-      values['relationship']
-    ]
-
-    fragments.compact.map(&:to_s).reject(&:blank?).join(' ').downcase
   end
 end

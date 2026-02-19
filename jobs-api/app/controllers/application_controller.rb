@@ -9,6 +9,7 @@ class ApplicationController < ActionController::Base
   stale_when_importmap_changes
 
   helper_method :rls_authenticated?, :rls_slack_user_id, :rls_hard_expires_at, :rls_idle_expires_at
+  helper_method :rls_admin?
 
   private
 
@@ -21,8 +22,26 @@ class ApplicationController < ActionController::Base
     true
   end
 
+  def require_rls_admin!
+    unless rls_admin?
+      redirect_to postings_path, alert: "Admin access is restricted."
+      return false
+    end
+
+    true
+  end
+
   def rls_authenticated?
     session[:rls_authenticated] == true
+  end
+
+  def rls_admin?
+    return false unless rls_authenticated?
+
+    admins = admin_slack_user_ids
+    return true if admins.empty? && !Rails.env.production?
+
+    admins.include?(rls_slack_user_id)
   end
 
   def rls_slack_user_id
@@ -85,5 +104,12 @@ class ApplicationController < ActionController::Base
     Time.zone.parse(raw)
   rescue ArgumentError
     nil
+  end
+
+  def admin_slack_user_ids
+    ENV.fetch("RLS_ADMIN_SLACK_USER_IDS", "")
+      .split(",")
+      .map(&:strip)
+      .reject(&:blank?)
   end
 end

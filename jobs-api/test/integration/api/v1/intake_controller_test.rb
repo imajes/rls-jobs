@@ -80,6 +80,41 @@ module Api
         assert_equal 0, Posting.count
       end
 
+      test "rejects request when bearer token is wrong" do
+        post api_v1_intake_path,
+             params: base_payload.to_json,
+             headers: {
+               "CONTENT_TYPE" => "application/json",
+               "Authorization" => "Bearer wrong-token"
+             }
+
+        assert_response :unauthorized
+        assert_equal 0, Posting.count
+      end
+
+      test "rejects invalid json payload" do
+        post api_v1_intake_path,
+             params: "{bad-json",
+             headers: json_headers
+
+        assert_response :bad_request
+        body = JSON.parse(response.body)
+        assert_equal false, body["ok"]
+        assert_equal "invalid_json", body["error"]
+      end
+
+      test "rejects semantic payload errors" do
+        invalid_payload = base_payload.except("values")
+        post api_v1_intake_path,
+             params: invalid_payload.to_json,
+             headers: json_headers
+
+        assert_response :unprocessable_entity
+        body = JSON.parse(response.body)
+        assert_equal false, body["ok"]
+        assert_includes body["errors"].join(" "), "values must be an object"
+      end
+
       private
 
       def json_headers

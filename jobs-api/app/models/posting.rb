@@ -12,6 +12,27 @@ class Posting < ApplicationRecord
   scope :active, -> { where(status: 'active') }
   scope :archived, -> { where(status: 'archived') }
 
+  def self.search_text_from_values(values)
+    normalized = values.to_h.deep_stringify_keys
+    fragments = [
+      normalized['companyName'],
+      normalized['roleTitle'],
+      normalized['headline'],
+      normalized['locationSummary'],
+      normalized['summary'],
+      normalized['notes'],
+      normalized['skills'],
+      Array(normalized['workArrangements']).join(' '),
+      Array(normalized['employmentTypes']).join(' '),
+      Array(normalized['engagementTypes']).join(' '),
+      Array(normalized['availabilityModes']).join(' '),
+      normalized['compensationValue'],
+      normalized['relationship']
+    ]
+
+    fragments.compact.map(&:to_s).reject(&:blank?).join(' ').downcase
+  end
+
   def values_hash
     JSON.parse(values_payload || '{}')
   rescue JSON::ParserError
@@ -32,5 +53,22 @@ class Posting < ApplicationRecord
     else
       headline.presence || values_hash['headline'].presence || 'Candidate profile'
     end
+  end
+
+  def resync_from_values!
+    values = values_hash
+    assign_attributes(
+      company_name: values['companyName'],
+      role_title: values['roleTitle'],
+      headline: values['headline'],
+      location_summary: values['locationSummary'],
+      compensation_value: values['compensationValue'],
+      visa_policy: values['visaPolicy'],
+      relationship: values['relationship'],
+      skills: values['skills'],
+      summary: values['summary'] || values['notes'],
+      search_text: self.class.search_text_from_values(values)
+    )
+    save!
   end
 end

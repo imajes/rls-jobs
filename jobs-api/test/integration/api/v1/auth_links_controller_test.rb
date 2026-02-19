@@ -39,6 +39,26 @@ module Api
 
         assert_response :unauthorized
       end
+
+      test "rejects create with wrong bearer token" do
+        post api_v1_auth_links_path,
+             params: { slack_user_id: "U123", slack_team_id: "T123" },
+             as: :json,
+             headers: { "Authorization" => "Bearer wrong-token" }
+
+        assert_response :unauthorized
+      end
+
+      test "validates required slack ids" do
+        post api_v1_auth_links_path,
+             params: { slack_user_name: "james" },
+             as: :json,
+             headers: { "Authorization" => "Bearer test-shared-token" }
+
+        assert_response :unprocessable_entity
+        body = JSON.parse(response.body)
+        assert_equal false, body["ok"]
+      end
     end
   end
 end

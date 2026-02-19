@@ -20,6 +20,21 @@ Rails.application.routes.draw do
   get "auth/slack/:token", to: "auth#redeem", as: :auth_slack_redeem
   delete "auth/logout", to: "auth#logout", as: :auth_logout
 
+  namespace :admin do
+    root "postings#index"
+    resources :postings, only: [:index, :edit, :update] do
+      member do
+        patch :archive
+        patch :restore
+        patch :resync
+      end
+
+      collection do
+        delete :cleanup_archived
+      end
+    end
+  end
+
   resources :postings, only: [:index, :show]
   root "postings#index"
 end

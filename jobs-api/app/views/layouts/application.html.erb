@@ -32,6 +32,9 @@
             <% if rls_hard_expires_at.present? %>
               <span>Hard expiry <%= distance_of_time_in_words(Time.current, rls_hard_expires_at) %></span>
             <% end %>
+            <% if rls_admin? %>
+              <a href="<%= admin_root_path %>">Admin</a>
+            <% end %>
             <%= button_to "Sign out", auth_logout_path, method: :delete, class: "top-bar__logout" %>
           <% else %>
             <a href="<%= auth_required_path %>">How to authenticate</a>

@@ -1,0 +1,97 @@
+<% content_for :title, "Admin · Postings" %>
+
+<main class="detail-shell">
+  <section class="detail-hero">
+    <p class="eyebrow">Admin Console</p>
+    <h1>Posting cleanup and moderation</h1>
+    <p class="hero-copy">
+      Use this panel to repair malformed records, archive/restore listings, and remove stale archived content.
+    </p>
+    <div class="stat-grid">
+      <div class="stat-card"><p class="stat-label">Total postings</p><p class="stat-value"><%= @stats[:total] %></p></div>
+      <div class="stat-card"><p class="stat-label">Archived</p><p class="stat-value"><%= @stats[:archived] %></p></div>
+      <div class="stat-card"><p class="stat-label">Ingest events</p><p class="stat-value"><%= @stats[:events] %></p></div>
+    </div>
+  </section>
+
+  <section class="filter-panel">
+    <h2>Filter</h2>
+    <%= form_with url: admin_postings_path, method: :get, local: true, class: "filter-grid" do %>
+      <label>
+        Search
+        <%= text_field_tag :q, @filters[:q], placeholder: "Role, company, headline", class: "text-field" %>
+      </label>
+      <label>
+        Status
+        <%= select_tag :status, options_for_select([["All", "all"], ["Active", "active"], ["Archived", "archived"]], @filters[:status]), class: "select-field" %>
+      </label>
+      <label>
+        Kind
+        <%= select_tag :kind, options_for_select([["All", "all"], ["Job", "job_posting"], ["Candidate", "candidate_profile"]], @filters[:kind]), class: "select-field" %>
+      </label>
+      <label>
+        Limit
+        <%= select_tag :limit, options_for_select([["20", 20], ["50", 50], ["80", 80], ["120", 120], ["200", 200]], @filters[:limit]), class: "select-field" %>
+      </label>
+      <div class="filter-actions">
+        <%= submit_tag "Apply", class: "button-primary" %>
+        <%= link_to "Reset", admin_postings_path, class: "button-secondary" %>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="filter-panel">
+    <h2>Cleanup archived records</h2>
+    <%= form_with url: cleanup_archived_admin_postings_path, method: :delete, local: true, class: "cleanup-row" do %>
+      <label>
+        Delete archived postings older than (days)
+        <%= number_field_tag :days, 90, min: 1, step: 1, class: "text-field" %>
+      </label>
+      <%= submit_tag "Delete stale archived", class: "button-danger", data: { turbo_confirm: "Delete matching archived postings? This cannot be undone." } %>
+    <% end %>
+  </section>
+
+  <section class="results-panel">
+    <div class="results-header"><h2>Admin results</h2><p><%= @postings.length %> shown</p></div>
+    <% if @postings.empty? %>
+      <div class="empty-state"><p>No postings matched current filters.</p></div>
+    <% else %>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Kind</th>
+              <th>Status</th>
+              <th>Title</th>
+              <th>Channel</th>
+              <th>Updated</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @postings.each do |posting| %>
+              <tr>
+                <td><code><%= posting.external_posting_id %></code></td>
+                <td><%= posting.kind %></td>
+                <td><%= posting.status %></td>
+                <td><%= truncate(posting.title, length: 64) %></td>
+                <td><%= posting.channel_label.presence || posting.channel_focus.presence || "-" %></td>
+                <td><%= posting.updated_at.to_fs(:short) %></td>
+                <td class="admin-actions">
+                  <%= link_to "Edit", edit_admin_posting_path(posting), class: "button-secondary button-small" %>
+                  <% if posting.status == "active" %>
+                    <%= button_to "Archive", archive_admin_posting_path(posting), method: :patch, class: "button-secondary button-small", form: { data: { turbo_confirm: "Archive this posting?" } } %>
+                  <% else %>
+                    <%= button_to "Restore", restore_admin_posting_path(posting), method: :patch, class: "button-secondary button-small" %>
+                  <% end %>
+                  <%= button_to "Resync", resync_admin_posting_path(posting), method: :patch, class: "button-secondary button-small" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </section>
+</main>

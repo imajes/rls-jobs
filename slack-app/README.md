@@ -90,6 +90,18 @@ The app runs in Socket Mode, so no inbound HTTP port is required.
 npm run lint
 ```
 
+## Tests
+
+```zsh
+npm test
+```
+
+Optional coverage output:
+
+```zsh
+npm run test:coverage
+```
+
 ## Environment variables
 
 Required:

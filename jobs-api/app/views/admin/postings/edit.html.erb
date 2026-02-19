@@ -1,0 +1,90 @@
+<% content_for :title, "Admin edit · #{@posting.title}" %>
+
+<main class="detail-shell">
+  <section class="detail-hero">
+    <%= link_to "← Back to admin listings", admin_postings_path, class: "back-link" %>
+    <p class="eyebrow">Admin Editor</p>
+    <h1><%= @posting.title %></h1>
+    <p class="hero-copy">Edit normalized fields and optionally repair the raw values JSON payload.</p>
+  </section>
+
+  <section class="filter-panel">
+    <h2>Edit posting</h2>
+    <%= form_with model: [:admin, @posting], local: true, class: "admin-form" do |form| %>
+      <label>
+        Status
+        <%= form.select :status, options_for_select([["Active", "active"], ["Archived", "archived"]], @posting.status), {}, class: "select-field" %>
+      </label>
+
+      <label>
+        Company
+        <%= form.text_field :company_name, class: "text-field" %>
+      </label>
+
+      <label>
+        Role title
+        <%= form.text_field :role_title, class: "text-field" %>
+      </label>
+
+      <label>
+        Candidate headline
+        <%= form.text_field :headline, class: "text-field" %>
+      </label>
+
+      <label>
+        Location summary
+        <%= form.text_field :location_summary, class: "text-field" %>
+      </label>
+
+      <label>
+        Compensation
+        <%= form.text_field :compensation_value, class: "text-field" %>
+      </label>
+
+      <label>
+        Visa policy
+        <%= form.text_field :visa_policy, class: "text-field" %>
+      </label>
+
+      <label>
+        Relationship
+        <%= form.text_field :relationship, class: "text-field" %>
+      </label>
+
+      <label>
+        Skills
+        <%= form.text_field :skills, class: "text-field" %>
+      </label>
+
+      <label>
+        Summary
+        <%= form.text_area :summary, rows: 4, class: "text-field" %>
+      </label>
+
+      <label>
+        Channel focus
+        <%= form.text_field :channel_focus, class: "text-field" %>
+      </label>
+
+      <label>
+        Channel label
+        <%= form.text_field :channel_label, class: "text-field" %>
+      </label>
+
+      <label>
+        Permalink
+        <%= form.text_field :permalink, class: "text-field" %>
+      </label>
+
+      <label class="admin-values-json">
+        Values payload JSON
+        <%= text_area_tag "posting[values_payload_json]", @values_json, rows: 20, class: "text-field code-field" %>
+      </label>
+
+      <div class="filter-actions">
+        <%= form.submit "Save changes", class: "button-primary" %>
+        <%= button_to "Resync from JSON", resync_admin_posting_path(@posting), method: :patch, class: "button-secondary", form: { data: { turbo_confirm: "Overwrite normalized fields from values payload?" } } %>
+      </div>
+    <% end %>
+  </section>
+</main>

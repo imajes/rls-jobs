@@ -26,6 +26,9 @@ Ingests structured Slack posting events and serves a protected browse UI for job
   - public base URL used when generating one-time auth links
 - `RLS_AUTH_LINK_TTL_SECONDS`
   - one-time link lifetime (default `600`)
+- `RLS_ADMIN_SLACK_USER_IDS`
+  - comma-separated Slack user IDs with access to `/admin`
+  - if unset, admin is allowed only in non-production environments
 
 ## Security/session behavior
 
@@ -33,6 +36,18 @@ Ingests structured Slack posting events and serves a protected browse UI for job
 - Links are single-use (`consumed_at`) and expiry-bound (`expires_at`).
 - Browser sessions are activity-refreshed, but hard-capped at 1 hour.
 - Browse routes require authenticated RLS session.
+- Admin routes require both authenticated session and admin Slack user ID allowlist.
+
+## Admin UI
+
+- `GET /admin`
+  - listing cleanup and moderation dashboard
+- actions:
+  - archive/restore postings
+  - edit normalized fields
+  - repair values payload JSON
+  - resync normalized fields from JSON payload
+  - bulk-delete stale archived postings older than N days
 
 ## Local development
 

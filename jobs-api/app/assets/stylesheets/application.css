@@ -241,6 +241,16 @@ h2 {
   justify-content: center;
 }
 
+.button-danger {
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--danger) 28%, var(--line) 72%);
+  background: color-mix(in srgb, var(--danger) 14%, white 86%);
+  color: var(--danger);
+  padding: 0.58rem 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .button-primary {
   background: var(--accent);
   color: white;
@@ -254,6 +264,11 @@ h2 {
   border-color: var(--line);
   color: var(--text);
   background: white;
+}
+
+.button-small {
+  padding: 0.28rem 0.52rem;
+  font-size: 0.76rem;
 }
 
 .results-header {
@@ -431,9 +446,83 @@ pre {
   color: var(--text-muted);
 }
 
+.cleanup-row {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-end;
+}
+
+.cleanup-row label {
+  flex: 1;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.83rem;
+  font-weight: 600;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.52rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-table th {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin-actions form,
+.admin-actions a {
+  margin: 0;
+}
+
+.admin-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.admin-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.83rem;
+  font-weight: 600;
+}
+
+.admin-values-json {
+  grid-column: 1 / -1;
+}
+
+.code-field {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+  font-size: 0.8rem;
+}
+
 @media (max-width: 920px) {
   .filter-grid,
-  .detail-grid {
+  .detail-grid,
+  .admin-form {
     grid-template-columns: 1fr;
   }
 
@@ -444,6 +533,11 @@ pre {
   .card-footer {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .cleanup-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 

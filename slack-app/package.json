@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node app.js",
     "start:prod": "node app.js",
+    "test": "node --test test/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage test/*.test.js",
     "lint": "npx @biomejs/biome check .",
     "lint:fix": "npx @biomejs/biome check --write .",
     "export:ui": "node scripts/export-ui-prototypes.js",
