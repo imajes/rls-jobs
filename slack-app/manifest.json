@@ -6,7 +6,7 @@
   },
   "features": {
     "app_home": {
-      "home_tab_enabled": false,
+      "home_tab_enabled": true,
       "messages_tab_enabled": true,
       "messages_tab_read_only_enabled": true
     },
@@ -32,16 +32,27 @@
       {
         "command": "/rls-jobs-intake",
         "url": "https://example.com/slack/commands",
-        "description": "Open structured intake modal (`job` or `candidate`)",
-        "usage_hint": "job | candidate",
+        "description": "Start guided intake (or pass `job` / `candidate`)",
+        "usage_hint": "[job|candidate]",
+        "should_escape": false
+      },
+      {
+        "command": "/rls-job-intake",
+        "url": "https://example.com/slack/commands",
+        "description": "Alias for /rls-jobs-intake",
+        "usage_hint": "[job|candidate]",
         "should_escape": false
       }
     ]
   },
   "oauth_config": {
     "scopes": {
-      "bot": ["chat:write", "commands"]
+      "bot": ["chat:write", "chat:write.public", "commands"]
     }
+  },
+  "event_subscriptions": {
+    "request_url": "https://example.com/slack/events",
+    "bot_events": ["app_home_opened"]
   },
   "settings": {
     "interactivity": {

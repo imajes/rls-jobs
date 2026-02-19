@@ -1,5 +1,6 @@
 const { CHANNEL_LABELS } = require('./channel-routing');
 const { labels } = require('./constants');
+const { splitLinks } = require('./validation');
 
 function toLabelList(values, labelMap) {
   return (values || []).map((value) => labelMap[value] || value);
@@ -23,6 +24,10 @@ function candidateHeadline(values) {
   return `${values.headline || 'Candidate'}, ${values.locationSummary || 'Location TBD'}`;
 }
 
+function firstLink(values) {
+  return splitLinks(values.links)[0] || '';
+}
+
 function routeOptions(previewId) {
   return Object.entries(CHANNEL_LABELS).map(([key, label]) => ({
     text: {
@@ -42,13 +47,23 @@ function jobPreviewMessage(userId, values, recommendation, routedChannelId, prev
   const actions = [
     {
       type: 'button',
+      action_id: 'job_card_publish',
+      text: {
+        type: 'plain_text',
+        text: 'Publish',
+        emoji: true,
+      },
+      style: 'primary',
+      value: previewId,
+    },
+    {
+      type: 'button',
       action_id: 'job_card_open_details_modal',
       text: {
         type: 'plain_text',
         text: 'Open Details',
         emoji: true,
       },
-      style: 'primary',
       value: previewId,
     },
     // TODO: Re-enable when shortlist/apply workflows are implemented.
@@ -238,13 +253,23 @@ function candidatePreviewMessage(userId, values, recommendation, routedChannelId
         elements: [
           {
             type: 'button',
+            action_id: 'candidate_card_publish',
+            text: {
+              type: 'plain_text',
+              text: 'Publish',
+              emoji: true,
+            },
+            style: 'primary',
+            value: previewId,
+          },
+          {
+            type: 'button',
             action_id: 'candidate_card_open_details_modal',
             text: {
               type: 'plain_text',
               text: 'Open Details',
               emoji: true,
             },
-            style: 'primary',
             value: previewId,
           },
           // TODO: Re-enable when saved-candidates workflow is implemented.
@@ -269,7 +294,345 @@ function candidatePreviewMessage(userId, values, recommendation, routedChannelId
   };
 }
 
+function jobPublishedMessage(channelId, values, postingId, actorUserId) {
+  const employment = toLabelList(values.employmentTypes, labels.employmentType).join(', ') || 'Not specified';
+  const visa = labels.visa[values.visaPolicy] || 'Not specified';
+  const applyLink = firstLink(values);
+
+  const actionElements = [
+    {
+      type: 'button',
+      action_id: 'job_published_open_details',
+      text: {
+        type: 'plain_text',
+        text: 'Open Details',
+        emoji: true,
+      },
+      style: 'primary',
+      value: postingId,
+    },
+    {
+      type: 'button',
+      action_id: 'published_post_edit',
+      text: {
+        type: 'plain_text',
+        text: 'Edit',
+        emoji: true,
+      },
+      value: postingId,
+    },
+    {
+      type: 'button',
+      action_id: 'published_post_archive',
+      text: {
+        type: 'plain_text',
+        text: 'Archive',
+        emoji: true,
+      },
+      style: 'danger',
+      value: postingId,
+      confirm: {
+        title: {
+          type: 'plain_text',
+          text: 'Archive this posting?',
+          emoji: true,
+        },
+        text: {
+          type: 'plain_text',
+          text: 'This will mark the posting as archived in-channel.',
+          emoji: true,
+        },
+        confirm: {
+          type: 'plain_text',
+          text: 'Archive',
+          emoji: true,
+        },
+        deny: {
+          type: 'plain_text',
+          text: 'Cancel',
+          emoji: true,
+        },
+      },
+    },
+  ];
+
+  if (applyLink) {
+    actionElements.push({
+      type: 'button',
+      text: {
+        type: 'plain_text',
+        text: 'Open Apply Link',
+        emoji: true,
+      },
+      url: applyLink,
+      action_id: 'job_published_apply_link',
+    });
+  }
+
+  return {
+    channel: channelId,
+    text: jobHeadline(values),
+    blocks: [
+      {
+        type: 'rich_text',
+        elements: [
+          {
+            type: 'rich_text_section',
+            elements: [
+              {
+                type: 'text',
+                text: values.roleTitle || 'Role',
+                style: {
+                  bold: true,
+                },
+              },
+              {
+                type: 'text',
+                text: ` at ${values.companyName || 'Company'}, ${values.locationSummary || 'Location TBD'}`,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'plain_text',
+            text: `💼 ${employment}`,
+            emoji: true,
+          },
+          {
+            type: 'plain_text',
+            text: `💸 ${humanComp(values)}`,
+            emoji: true,
+          },
+          {
+            type: 'plain_text',
+            text: `🛂 Visa: ${visa}`,
+            emoji: true,
+          },
+        ],
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'plain_text',
+          text: values.summary || 'No summary provided.',
+          emoji: true,
+        },
+      },
+      {
+        type: 'actions',
+        elements: actionElements,
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'mrkdwn',
+            text: `Shared via RLS Jobs by <@${actorUserId}>`,
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function candidatePublishedMessage(channelId, values, postingId, actorUserId) {
+  const arrangements = toLabelList(values.workArrangements, labels.workArrangement).join(', ') || 'Not specified';
+  const availability =
+    toLabelList(values.availabilityModes, labels.candidateAvailability).join(', ') || 'Not specified';
+  const profileLink = firstLink(values);
+
+  const actionElements = [
+    {
+      type: 'button',
+      action_id: 'candidate_published_open_details',
+      text: {
+        type: 'plain_text',
+        text: 'Open Details',
+        emoji: true,
+      },
+      style: 'primary',
+      value: postingId,
+    },
+    {
+      type: 'button',
+      action_id: 'published_post_edit',
+      text: {
+        type: 'plain_text',
+        text: 'Edit',
+        emoji: true,
+      },
+      value: postingId,
+    },
+    {
+      type: 'button',
+      action_id: 'published_post_archive',
+      text: {
+        type: 'plain_text',
+        text: 'Archive',
+        emoji: true,
+      },
+      style: 'danger',
+      value: postingId,
+      confirm: {
+        title: {
+          type: 'plain_text',
+          text: 'Archive this posting?',
+          emoji: true,
+        },
+        text: {
+          type: 'plain_text',
+          text: 'This will mark the posting as archived in-channel.',
+          emoji: true,
+        },
+        confirm: {
+          type: 'plain_text',
+          text: 'Archive',
+          emoji: true,
+        },
+        deny: {
+          type: 'plain_text',
+          text: 'Cancel',
+          emoji: true,
+        },
+      },
+    },
+  ];
+
+  if (profileLink) {
+    actionElements.push({
+      type: 'button',
+      text: {
+        type: 'plain_text',
+        text: 'Open Primary Link',
+        emoji: true,
+      },
+      url: profileLink,
+      action_id: 'candidate_published_primary_link',
+    });
+  }
+
+  return {
+    channel: channelId,
+    text: candidateHeadline(values),
+    blocks: [
+      {
+        type: 'rich_text',
+        elements: [
+          {
+            type: 'rich_text_section',
+            elements: [
+              {
+                type: 'text',
+                text: values.headline || 'Candidate profile',
+                style: {
+                  bold: true,
+                },
+              },
+              {
+                type: 'text',
+                text: ` • ${values.locationSummary || 'Location TBD'}`,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'plain_text',
+            text: `📌 Work: ${arrangements}`,
+            emoji: true,
+          },
+          {
+            type: 'plain_text',
+            text: `🕒 Availability: ${availability}`,
+            emoji: true,
+          },
+          {
+            type: 'plain_text',
+            text: `💸 ${humanComp(values)}`,
+            emoji: true,
+          },
+        ],
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'plain_text',
+          text: values.notes || 'No notes provided.',
+          emoji: true,
+        },
+      },
+      {
+        type: 'actions',
+        elements: actionElements,
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'mrkdwn',
+            text: `Shared via RLS Jobs by <@${actorUserId}>`,
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function archivedPostingMessage(posting) {
+  const heading = posting.kind === 'job_posting' ? jobHeadline(posting.values) : candidateHeadline(posting.values);
+  const openDetailsActionId =
+    posting.kind === 'job_posting' ? 'job_published_open_details' : 'candidate_published_open_details';
+
+  return {
+    channel: posting.channelId,
+    text: `Archived: ${heading}`,
+    blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `:archive: *Archived posting*\n${heading}`,
+        },
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'mrkdwn',
+            text: posting.archivedByUserId ? `Archived by <@${posting.archivedByUserId}>` : 'Archived',
+          },
+        ],
+      },
+      {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            action_id: openDetailsActionId,
+            text: {
+              type: 'plain_text',
+              text: 'Open Details',
+              emoji: true,
+            },
+            value: posting.id,
+          },
+        ],
+      },
+    ],
+  };
+}
+
 module.exports = {
+  archivedPostingMessage,
+  candidatePublishedMessage,
   candidatePreviewMessage,
+  jobPublishedMessage,
   jobPreviewMessage,
 };

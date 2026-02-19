@@ -10,6 +10,11 @@ function getConfig() {
       jobsCofounders: process.env.RLS_CHANNEL_JOBS_COFOUNDERS_ID || '',
       jobsConsulting: process.env.RLS_CHANNEL_JOBS_CONSULTING_ID || '',
     },
+    jobsApi: {
+      ingestUrl: process.env.RLS_JOBS_API_INGEST_URL || '',
+      token: process.env.RLS_JOBS_API_TOKEN || '',
+      timeoutMs: process.env.RLS_JOBS_API_TIMEOUT_MS || '5000',
+    },
   };
 }
 

@@ -1,0 +1,521 @@
+{
+  "type": "modal",
+  "callback_id": "job_posting_edit_modal",
+  "private_metadata": "{\"postingId\":\"posting_job_001\"}",
+  "title": {
+    "type": "plain_text",
+    "text": "Edit Job Posting",
+    "emoji": true
+  },
+  "submit": {
+    "type": "plain_text",
+    "text": "Save Changes",
+    "emoji": true
+  },
+  "close": {
+    "type": "plain_text",
+    "text": "Cancel",
+    "emoji": true
+  },
+  "blocks": [
+    {
+      "type": "input",
+      "block_id": "job_company_name_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Company",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_company_name_input",
+        "initial_value": "Steady Orbit Labs",
+        "multiline": false,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Company name",
+          "emoji": true
+        }
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_role_title_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Role",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_role_title_input",
+        "initial_value": "Senior Platform Engineer",
+        "multiline": false,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Role title",
+          "emoji": true
+        }
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_location_summary_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Location",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_location_summary_input",
+        "initial_value": "Hybrid in NYC (2 days onsite)",
+        "multiline": false,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Where can someone do this role?",
+          "emoji": true
+        }
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_work_arrangements_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Work setup",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "job_work_arrangements_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Remote",
+              "emoji": true
+            },
+            "value": "remote"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Hybrid",
+              "emoji": true
+            },
+            "value": "hybrid"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "On-site",
+              "emoji": true
+            },
+            "value": "onsite"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Flexible or mixed",
+              "emoji": true
+            },
+            "value": "flexible"
+          }
+        ],
+        "initial_options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Hybrid",
+              "emoji": true
+            },
+            "value": "hybrid"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "On-site",
+              "emoji": true
+            },
+            "value": "onsite"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_employment_types_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Employment",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "job_employment_types_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Full-time",
+              "emoji": true
+            },
+            "value": "full_time"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Part-time",
+              "emoji": true
+            },
+            "value": "part_time"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Contract",
+              "emoji": true
+            },
+            "value": "contract"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Consulting",
+              "emoji": true
+            },
+            "value": "consulting"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Cofounder or founding role",
+              "emoji": true
+            },
+            "value": "cofounder"
+          }
+        ],
+        "initial_options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Full-time",
+              "emoji": true
+            },
+            "value": "full_time"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Contract",
+              "emoji": true
+            },
+            "value": "contract"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_compensation_value_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Compensation",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_compensation_value_input",
+        "initial_value": "$185k-$230k USD",
+        "multiline": false,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Examples: $180k-$220k USD or negotiable",
+          "emoji": true
+        }
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_compensation_components_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Comp components",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "job_compensation_components_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Equity",
+              "emoji": true
+            },
+            "value": "equity"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Bonus",
+              "emoji": true
+            },
+            "value": "bonus"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Commission",
+              "emoji": true
+            },
+            "value": "commission"
+          }
+        ],
+        "initial_options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Equity",
+              "emoji": true
+            },
+            "value": "equity"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Bonus",
+              "emoji": true
+            },
+            "value": "bonus"
+          }
+        ]
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "job_visa_policy_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Visa",
+        "emoji": true
+      },
+      "element": {
+        "type": "radio_buttons",
+        "action_id": "job_visa_policy_radio",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Can sponsor visa",
+              "emoji": true
+            },
+            "value": "yes"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Cannot sponsor visa",
+              "emoji": true
+            },
+            "value": "no"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Case-by-case",
+              "emoji": true
+            },
+            "value": "case_by_case"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Unknown",
+              "emoji": true
+            },
+            "value": "unknown"
+          }
+        ],
+        "initial_option": {
+          "text": {
+            "type": "plain_text",
+            "text": "Case-by-case",
+            "emoji": true
+          },
+          "value": "case_by_case"
+        }
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_relationship_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Relationship to role",
+        "emoji": true
+      },
+      "element": {
+        "type": "radio_buttons",
+        "action_id": "job_relationship_radio",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Hiring manager",
+              "emoji": true
+            },
+            "value": "hiring_manager"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Team member",
+              "emoji": true
+            },
+            "value": "team_member"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Recruiter",
+              "emoji": true
+            },
+            "value": "recruiter"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Can refer or introduce",
+              "emoji": true
+            },
+            "value": "referral"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Other",
+              "emoji": true
+            },
+            "value": "other"
+          }
+        ],
+        "initial_option": {
+          "text": {
+            "type": "plain_text",
+            "text": "Hiring manager",
+            "emoji": true
+          },
+          "value": "hiring_manager"
+        }
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_links_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Links",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_links_input",
+        "initial_value": "https://example.com/jobs/senior-platform-engineer\nhttps://steadyorbitlabs.com/careers/platform-engineering",
+        "multiline": true,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Add one URL per line",
+          "emoji": true
+        }
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "job_skills_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Skills",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_skills_input",
+        "initial_value": "Ruby, Postgres, AWS, Terraform",
+        "multiline": false,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Comma-separated skills",
+          "emoji": true
+        }
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "job_summary_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Summary",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_summary_input",
+        "initial_value": "Build and scale data-heavy systems, improve reliability posture, and partner closely with product engineering teams.",
+        "multiline": true,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Short role summary",
+          "emoji": true
+        }
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "job_thread_questions_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Thread follow-ups",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "job_thread_questions_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Allow follow-up questions in thread",
+              "emoji": true
+            },
+            "value": "allow_thread_questions"
+          }
+        ],
+        "initial_options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Allow follow-up questions in thread",
+              "emoji": true
+            },
+            "value": "allow_thread_questions"
+          }
+        ]
+      },
+      "optional": true
+    }
+  ]
+}

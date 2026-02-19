@@ -1,0 +1,77 @@
+{
+  "type": "modal",
+  "callback_id": "intake_kind_chooser_modal",
+  "title": {
+    "type": "plain_text",
+    "text": "Start Intake",
+    "emoji": true
+  },
+  "submit": {
+    "type": "plain_text",
+    "text": "Continue",
+    "emoji": true
+  },
+  "close": {
+    "type": "plain_text",
+    "text": "Cancel",
+    "emoji": true
+  },
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*What would you like to share today?*"
+      }
+    },
+    {
+      "type": "input",
+      "block_id": "intake_kind_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Posting type",
+        "emoji": true
+      },
+      "element": {
+        "type": "radio_buttons",
+        "action_id": "intake_kind_action",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Job listing",
+              "emoji": true
+            },
+            "value": "job_posting"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Candidate availability",
+              "emoji": true
+            },
+            "value": "candidate_profile"
+          }
+        ],
+        "initial_option": {
+          "text": {
+            "type": "plain_text",
+            "text": "Job listing",
+            "emoji": true
+          },
+          "value": "job_posting"
+        }
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "Tip: you can still pass \"job\" or \"candidate\" to the slash command to skip this step.",
+          "emoji": true
+        }
+      ]
+    }
+  ]
+}

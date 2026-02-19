@@ -1,0 +1,209 @@
+{
+  "type": "home",
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "RLS Job Listings",
+        "emoji": true
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Welcome to your listings control panel.*\nShare structured opportunities, keep details current, and archive listings cleanly when they close."
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "Use the buttons below to post something new, or scroll down to manage what you have already published in Slack."
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "home_new_job",
+          "text": {
+            "type": "plain_text",
+            "text": "Share a New Job",
+            "emoji": true
+          },
+          "style": "primary",
+          "value": "home_new_job"
+        },
+        {
+          "type": "button",
+          "action_id": "home_new_candidate",
+          "text": {
+            "type": "plain_text",
+            "text": "Share Candidate Availability",
+            "emoji": true
+          },
+          "value": "home_new_candidate"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Tip: you can also use `/rls-jobs-intake job` or `/rls-jobs-intake candidate` from any channel."
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "1 active",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "1 archived",
+          "emoji": true
+        }
+      ]
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Active",
+        "emoji": true
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Senior Platform Engineer at Steady Orbit Labs*\n💼 Job • Hybrid in NYC (2 days onsite) • 2026-02-19"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "job_published_open_details",
+          "text": {
+            "type": "plain_text",
+            "text": "Open Details",
+            "emoji": true
+          },
+          "value": "posting_job_001"
+        },
+        {
+          "type": "button",
+          "action_id": "published_post_edit",
+          "text": {
+            "type": "plain_text",
+            "text": "Edit",
+            "emoji": true
+          },
+          "value": "posting_job_001"
+        },
+        {
+          "type": "button",
+          "action_id": "published_post_archive",
+          "text": {
+            "type": "plain_text",
+            "text": "Archive",
+            "emoji": true
+          },
+          "style": "danger",
+          "value": "posting_job_001",
+          "confirm": {
+            "title": {
+              "type": "plain_text",
+              "text": "Archive this posting?",
+              "emoji": true
+            },
+            "text": {
+              "type": "plain_text",
+              "text": "This will replace the channel card with an archived marker.",
+              "emoji": true
+            },
+            "confirm": {
+              "type": "plain_text",
+              "text": "Archive",
+              "emoji": true
+            },
+            "deny": {
+              "type": "plain_text",
+              "text": "Cancel",
+              "emoji": true
+            }
+          }
+        },
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Open in Slack",
+            "emoji": true
+          },
+          "url": "https://slack.com/app_redirect?channel=C123PUBLISHED",
+          "action_id": "home_post_open_slack"
+        }
+      ]
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Archived",
+        "emoji": true
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Staff Product Engineer / Engineering Manager*\n🧑‍💻 Candidate • Seattle, WA, open to US remote roles • 2026-02-17"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "candidate_published_open_details",
+          "text": {
+            "type": "plain_text",
+            "text": "Open Details",
+            "emoji": true
+          },
+          "value": "posting_candidate_001"
+        },
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Open in Slack",
+            "emoji": true
+          },
+          "url": "https://slack.com/app_redirect?channel=C123PUBLISHED",
+          "action_id": "home_post_open_slack"
+        }
+      ]
+    },
+    {
+      "type": "divider"
+    }
+  ]
+}

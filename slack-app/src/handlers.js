@@ -1,16 +1,42 @@
+const { randomUUID } = require('node:crypto');
+
 const { CHANNEL_LABELS, mapFocusToChannelId, recommendChannel } = require('./channel-routing');
+const { buildAppHomeView } = require('./app-home');
 const { POST_KIND } = require('./constants');
 const { buildCandidateDetailsModal, buildJobDetailsModal } = require('./details-modals');
+const { postIntakeEvent } = require('./jobs-api-client');
 const {
   buildCandidateGuidedStep1Modal,
   buildCandidateGuidedStep2Modal,
   buildCandidateGuidedStep3Modal,
+  buildIntakeChooserModal,
   buildJobGuidedStep1Modal,
   buildJobGuidedStep2Modal,
   buildJobGuidedStep3Modal,
 } = require('./modals');
-const { createPreview, getPreview } = require('./preview-store');
-const { candidatePreviewMessage, jobPreviewMessage } = require('./preview-messages');
+const { buildCandidateEditModal, buildJobEditModal } = require('./posting-edit-modals');
+const {
+  archivePosting,
+  createPosting,
+  findPostingByMessage,
+  getPosting,
+  listPostingsByUser,
+  updatePosting,
+} = require('./posting-store');
+const {
+  createPreview,
+  getPreview,
+  isPublishedToRoute,
+  markPreviewPublished,
+  updatePreviewRoute,
+} = require('./preview-store');
+const {
+  archivedPostingMessage,
+  candidatePreviewMessage,
+  candidatePublishedMessage,
+  jobPreviewMessage,
+  jobPublishedMessage,
+} = require('./preview-messages');
 const {
   parseCandidateStep1,
   parseCandidateStep2,
@@ -27,6 +53,7 @@ const {
   validateJobStep2,
   validateJobStep3,
 } = require('./validation');
+const { getRadioValue } = require('./view-state');
 
 async function openModal(client, triggerId, view) {
   await client.views.open({
@@ -52,6 +79,19 @@ function parseMetadata(raw) {
   }
 }
 
+function parsePostingIdMetadata(raw) {
+  if (!raw) {
+    return '';
+  }
+
+  try {
+    const metadata = JSON.parse(raw);
+    return metadata.postingId || '';
+  } catch (_error) {
+    return '';
+  }
+}
+
 async function sendDm(client, userId, text) {
   await client.chat.postMessage({
     channel: userId,
@@ -59,9 +99,222 @@ async function sendDm(client, userId, text) {
   });
 }
 
+function inferKindFromCommandText(text) {
+  const normalized = (text || '').trim().toLowerCase();
+  if (!normalized) {
+    return '';
+  }
+
+  if (/(cand|availability|avail|profile|talent|candidate)/.test(normalized)) {
+    return POST_KIND.CANDIDATE;
+  }
+
+  if (/(job|jobs|role|roles|hire|hiring|opening|openings|opportun)/.test(normalized)) {
+    return POST_KIND.JOB;
+  }
+
+  return '';
+}
+
 function parseRouteValue(rawValue) {
   const [previewId, channelFocus] = (rawValue || '').split('|');
   return { channelFocus, previewId };
+}
+
+function parsePostingActionValue(rawValue, body) {
+  if (rawValue) {
+    return rawValue;
+  }
+
+  const channelId = body.container?.channel_id || '';
+  const messageTs = body.container?.message_ts || '';
+  const posting = findPostingByMessage(channelId, messageTs);
+  return posting?.id || '';
+}
+
+const CHANNEL_ENV_KEYS = {
+  jobs: 'RLS_CHANNEL_JOBS_ID',
+  onsite_jobs: 'RLS_CHANNEL_ONSITE_JOBS_ID',
+  remote_jobs: 'RLS_CHANNEL_REMOTE_JOBS_ID',
+  jobs_cofounders: 'RLS_CHANNEL_JOBS_COFOUNDERS_ID',
+  jobs_consulting: 'RLS_CHANNEL_JOBS_CONSULTING_ID',
+};
+
+function buildPreviewMessageForRoute(userId, preview, channelFocus, routedChannelId) {
+  const recommendation = {
+    key: channelFocus || preview.recommendation?.key,
+    reason: 'user_route_override',
+  };
+  if (preview.kind === POST_KIND.JOB) {
+    return jobPreviewMessage(userId, preview.values, recommendation, routedChannelId, preview.id);
+  }
+
+  return candidatePreviewMessage(userId, preview.values, recommendation, routedChannelId, preview.id);
+}
+
+async function refreshPreviewCard(client, body, preview, channelFocus, routedChannelId, logger) {
+  const channel = body.container?.channel_id;
+  const ts = body.container?.message_ts;
+  if (!channel || !ts) {
+    return;
+  }
+
+  const message = buildPreviewMessageForRoute(body.user.id, preview, channelFocus, routedChannelId);
+
+  try {
+    await client.chat.update({
+      channel,
+      ts,
+      text: message.text,
+      blocks: message.blocks,
+    });
+  } catch (error) {
+    logger.error(error);
+  }
+}
+
+function resolvePreviewRoute(preview, channelIds) {
+  const channelFocus = preview.channelFocus || preview.recommendation?.key;
+  const routedChannelId = preview.routedChannelId || mapFocusToChannelId(channelFocus, channelIds);
+  return { channelFocus, routedChannelId };
+}
+
+function routeMissingConfigMessage(channelFocus) {
+  const label = CHANNEL_LABELS[channelFocus] || '#jobs';
+  const envKey = CHANNEL_ENV_KEYS[channelFocus] || 'RLS_CHANNEL_JOBS_ID';
+  return `Route is set to ${label}, but no channel ID is configured. Set ${envKey} and try again.`;
+}
+
+async function publishHome(client, userId, logger) {
+  try {
+    const postings = listPostingsByUser(userId);
+    await client.views.publish({
+      user_id: userId,
+      view: buildAppHomeView(postings),
+    });
+  } catch (error) {
+    logger.error(error);
+  }
+}
+
+function messageForPosting(posting) {
+  if (posting.kind === POST_KIND.JOB) {
+    return jobPublishedMessage(posting.channelId, posting.values, posting.id, posting.posterUserId);
+  }
+  return candidatePublishedMessage(posting.channelId, posting.values, posting.id, posting.posterUserId);
+}
+
+function postingFromAction(body) {
+  const actionValue = body.actions?.[0]?.value || '';
+  const postingId = parsePostingActionValue(actionValue, body);
+  if (!postingId) {
+    return null;
+  }
+  return getPosting(postingId);
+}
+
+async function requirePostingOwner(client, userId, posting, actionLabel) {
+  if (!posting) {
+    await sendDm(client, userId, 'That posting was not found. It may have expired from memory.');
+    return false;
+  }
+
+  if (posting.posterUserId !== userId) {
+    await sendDm(client, userId, `Only the original poster can ${actionLabel} this posting.`);
+    return false;
+  }
+
+  return true;
+}
+
+async function publishPreview({ body, client, config, logger, previewId, expectedKind }) {
+  const preview = getPreview(previewId);
+  if (!preview) {
+    await sendDm(client, body.user.id, 'That preview expired. Please submit again.');
+    return;
+  }
+
+  if (expectedKind && preview.kind !== expectedKind) {
+    await sendDm(client, body.user.id, 'This publish action does not match the preview type.');
+    return;
+  }
+
+  const { channelFocus, routedChannelId } = resolvePreviewRoute(preview, config.channelIds);
+  if (!routedChannelId) {
+    await sendDm(client, body.user.id, routeMissingConfigMessage(channelFocus));
+    return;
+  }
+
+  if (isPublishedToRoute(previewId, routedChannelId)) {
+    const label = CHANNEL_LABELS[channelFocus] || '#jobs';
+    await sendDm(client, body.user.id, `This preview is already published to ${label}.`);
+    return;
+  }
+
+  const postingId = randomUUID();
+  const message =
+    preview.kind === POST_KIND.JOB
+      ? jobPublishedMessage(routedChannelId, preview.values, postingId, body.user.id)
+      : candidatePublishedMessage(routedChannelId, preview.values, postingId, body.user.id);
+
+  const posted = await client.chat.postMessage(message);
+  markPreviewPublished(previewId, routedChannelId, posted.ts);
+
+  let permalink = '';
+  try {
+    const response = await client.chat.getPermalink({
+      channel: routedChannelId,
+      message_ts: posted.ts,
+    });
+    permalink = response.permalink || '';
+  } catch (error) {
+    logger.warn('unable_to_get_permalink', error);
+  }
+
+  const label = CHANNEL_LABELS[channelFocus] || '#jobs';
+  await sendDm(client, body.user.id, permalink ? `Published to ${label}: ${permalink}` : `Published to ${label}.`);
+
+  const posting = createPosting({
+    id: postingId,
+    kind: preview.kind,
+    values: preview.values,
+    posterUserId: body.user.id,
+    channelId: routedChannelId,
+    channelFocus,
+    messageTs: posted.ts || '',
+    permalink,
+  });
+
+  await publishHome(client, body.user.id, logger);
+
+  const ingestResult = await postIntakeEvent(
+    config,
+    {
+      eventType: 'slack_post_published',
+      kind: preview.kind,
+      previewId: preview.id,
+      postingId: posting.id,
+      postedAt: new Date().toISOString(),
+      route: {
+        channelFocus,
+        channelId: routedChannelId,
+        channelLabel: label,
+      },
+      slack: {
+        teamId: body.team?.id || '',
+        previewDmChannelId: body.container?.channel_id || '',
+        previewDmMessageTs: body.container?.message_ts || '',
+        publishedMessageTs: posted.ts || '',
+        publishedByUserId: body.user.id,
+      },
+      values: preview.values,
+    },
+    logger,
+  );
+
+  if (!ingestResult.sent && ingestResult.reason !== 'not_configured') {
+    logger.warn(`jobs_api_ingest_not_sent reason=${ingestResult.reason}`);
+  }
 }
 
 function registerHandlers(app, config) {
@@ -83,18 +336,59 @@ function registerHandlers(app, config) {
     }
   });
 
-  app.command('/rls-jobs-intake', async ({ ack, command, client, logger }) => {
+  const intakeCommandHandler = async ({ ack, command, client, logger }) => {
     await ack();
 
-    const requested = (command.text || '').trim().toLowerCase();
-    const wantsCandidate = ['candidate', 'profile', 'availability'].some((token) => requested.includes(token));
+    const inferredKind = inferKindFromCommandText(command.text || '');
+    const initialView =
+      inferredKind === POST_KIND.CANDIDATE
+        ? buildCandidateGuidedStep1Modal()
+        : inferredKind === POST_KIND.JOB
+          ? buildJobGuidedStep1Modal()
+          : buildIntakeChooserModal();
 
     try {
-      await openModal(
-        client,
-        command.trigger_id,
-        wantsCandidate ? buildCandidateGuidedStep1Modal() : buildJobGuidedStep1Modal(),
-      );
+      await openModal(client, command.trigger_id, initialView);
+    } catch (error) {
+      logger.error(error);
+    }
+  };
+
+  app.command('/rls-jobs-intake', intakeCommandHandler);
+  app.command('/rls-job-intake', intakeCommandHandler);
+
+  app.event('app_home_opened', async ({ event, client, logger }) => {
+    await publishHome(client, event.user, logger);
+  });
+
+  app.view('intake_kind_chooser_modal', async ({ ack, logger, view }) => {
+    const selectedKind = getRadioValue(view.state.values, 'intake_kind_block', 'intake_kind_action');
+    const nextView =
+      selectedKind === POST_KIND.CANDIDATE ? buildCandidateGuidedStep1Modal() : buildJobGuidedStep1Modal();
+
+    try {
+      await ack({
+        response_action: 'update',
+        view: nextView,
+      });
+    } catch (error) {
+      logger.error(error);
+    }
+  });
+
+  app.action('home_new_job', async ({ ack, body, client, logger }) => {
+    await ack();
+    try {
+      await openModal(client, body.trigger_id, buildJobGuidedStep1Modal());
+    } catch (error) {
+      logger.error(error);
+    }
+  });
+
+  app.action('home_new_candidate', async ({ ack, body, client, logger }) => {
+    await ack();
+    try {
+      await openModal(client, body.trigger_id, buildCandidateGuidedStep1Modal());
     } catch (error) {
       logger.error(error);
     }
@@ -270,6 +564,190 @@ function registerHandlers(app, config) {
     }
   });
 
+  app.action('job_published_open_details', async ({ ack, body, client, logger }) => {
+    await ack();
+    const posting = postingFromAction(body);
+    if (!posting) {
+      await sendDm(client, body.user.id, 'Posting not found.');
+      return;
+    }
+
+    try {
+      await openModal(client, body.trigger_id, buildJobDetailsModal(posting.values));
+    } catch (error) {
+      logger.error(error);
+    }
+  });
+
+  app.action('candidate_published_open_details', async ({ ack, body, client, logger }) => {
+    await ack();
+    const posting = postingFromAction(body);
+    if (!posting) {
+      await sendDm(client, body.user.id, 'Posting not found.');
+      return;
+    }
+
+    try {
+      await openModal(client, body.trigger_id, buildCandidateDetailsModal(posting.values));
+    } catch (error) {
+      logger.error(error);
+    }
+  });
+
+  app.action('published_post_edit', async ({ ack, body, client, logger }) => {
+    await ack();
+    const posting = postingFromAction(body);
+    const isOwner = await requirePostingOwner(client, body.user.id, posting, 'edit');
+    if (!isOwner) {
+      return;
+    }
+
+    if (posting.status === 'archived') {
+      await sendDm(client, body.user.id, 'Archived postings cannot be edited.');
+      return;
+    }
+
+    try {
+      await openModal(
+        client,
+        body.trigger_id,
+        posting.kind === POST_KIND.JOB ? buildJobEditModal(posting) : buildCandidateEditModal(posting),
+      );
+    } catch (error) {
+      logger.error(error);
+    }
+  });
+
+  app.action('published_post_archive', async ({ ack, body, client, logger }) => {
+    await ack();
+    const posting = postingFromAction(body);
+    const isOwner = await requirePostingOwner(client, body.user.id, posting, 'archive');
+    if (!isOwner) {
+      return;
+    }
+
+    if (posting.status === 'archived') {
+      await sendDm(client, body.user.id, 'This posting is already archived.');
+      return;
+    }
+
+    archivePosting(posting.id, body.user.id);
+
+    try {
+      const archivedMessage = archivedPostingMessage(posting);
+      await client.chat.update({
+        channel: posting.channelId,
+        ts: posting.messageTs,
+        text: archivedMessage.text,
+        blocks: archivedMessage.blocks,
+      });
+      await sendDm(client, body.user.id, 'Posting archived.');
+      await publishHome(client, body.user.id, logger);
+    } catch (error) {
+      logger.error(error);
+    }
+  });
+
+  app.view('job_posting_edit_modal', async ({ ack, body, client, logger, view }) => {
+    const postingId = parsePostingIdMetadata(view.private_metadata);
+    const posting = getPosting(postingId);
+
+    const step1 = parseJobStep1(view.state.values);
+    const step2 = parseJobStep2(view.state.values);
+    const step3 = parseJobStep3(view.state.values);
+    const mergedValues = { ...step1, ...step2, ...step3 };
+    const errors = {
+      ...validateJobStep1(step1),
+      ...validateJobStep2(step2),
+      ...validateJobStep3(step3),
+    };
+
+    if (Object.keys(errors).length) {
+      await ack({ errors, response_action: 'errors' });
+      return;
+    }
+
+    await ack();
+
+    const isOwner = await requirePostingOwner(client, body.user.id, posting, 'edit');
+    if (!isOwner) {
+      return;
+    }
+
+    updatePosting(posting.id, {
+      values: {
+        ...posting.values,
+        ...mergedValues,
+      },
+    });
+
+    try {
+      const updated = getPosting(posting.id);
+      const message = messageForPosting(updated);
+      await client.chat.update({
+        channel: updated.channelId,
+        ts: updated.messageTs,
+        text: message.text,
+        blocks: message.blocks,
+      });
+      await sendDm(client, body.user.id, 'Posting updated.');
+      await publishHome(client, body.user.id, logger);
+    } catch (error) {
+      logger.error(error);
+      await sendDm(client, body.user.id, 'Could not update the posted message. Please try again.');
+    }
+  });
+
+  app.view('candidate_posting_edit_modal', async ({ ack, body, client, logger, view }) => {
+    const postingId = parsePostingIdMetadata(view.private_metadata);
+    const posting = getPosting(postingId);
+
+    const step1 = parseCandidateStep1(view.state.values);
+    const step2 = parseCandidateStep2(view.state.values);
+    const step3 = parseCandidateStep3(view.state.values);
+    const mergedValues = { ...step1, ...step2, ...step3 };
+    const errors = {
+      ...validateCandidateStep1(step1),
+      ...validateCandidateStep2(step2),
+      ...validateCandidateStep3(step3),
+    };
+
+    if (Object.keys(errors).length) {
+      await ack({ errors, response_action: 'errors' });
+      return;
+    }
+
+    await ack();
+
+    const isOwner = await requirePostingOwner(client, body.user.id, posting, 'edit');
+    if (!isOwner) {
+      return;
+    }
+
+    updatePosting(posting.id, {
+      values: {
+        ...posting.values,
+        ...mergedValues,
+      },
+    });
+
+    try {
+      const updated = getPosting(posting.id);
+      const message = messageForPosting(updated);
+      await client.chat.update({
+        channel: updated.channelId,
+        ts: updated.messageTs,
+        text: message.text,
+        blocks: message.blocks,
+      });
+      await sendDm(client, body.user.id, 'Posting updated.');
+      await publishHome(client, body.user.id, logger);
+    } catch (error) {
+      logger.error(error);
+      await sendDm(client, body.user.id, 'Could not update the posted message. Please try again.');
+    }
+  });
+
   app.action('job_card_quick_apply', async ({ ack, body, client }) => {
     await ack();
     await sendDm(client, body.user.id, 'Quick Apply clicked. We can wire this to a saved shortlist flow next.');
@@ -302,16 +780,66 @@ function registerHandlers(app, config) {
 
   app.action('job_card_route_channel', async ({ ack, body, client }) => {
     await ack();
-    const { channelFocus } = parseRouteValue(body.actions?.[0]?.selected_option?.value);
+    const { channelFocus, previewId } = parseRouteValue(body.actions?.[0]?.selected_option?.value);
+    const preview = getPreview(previewId);
+    if (!preview) {
+      await sendDm(client, body.user.id, 'That preview expired. Please submit again.');
+      return;
+    }
+
+    const routedChannelId = mapFocusToChannelId(channelFocus, config.channelIds);
+    updatePreviewRoute(previewId, channelFocus, routedChannelId);
+    await refreshPreviewCard(client, body, preview, channelFocus, routedChannelId, app.logger);
+
     const label = CHANNEL_LABELS[channelFocus] || '#jobs';
+    if (!routedChannelId) {
+      await sendDm(client, body.user.id, routeMissingConfigMessage(channelFocus));
+      return;
+    }
     await sendDm(client, body.user.id, `Route preference captured: ${label}`);
   });
 
   app.action('candidate_card_route_channel', async ({ ack, body, client }) => {
     await ack();
-    const { channelFocus } = parseRouteValue(body.actions?.[0]?.selected_option?.value);
+    const { channelFocus, previewId } = parseRouteValue(body.actions?.[0]?.selected_option?.value);
+    const preview = getPreview(previewId);
+    if (!preview) {
+      await sendDm(client, body.user.id, 'That preview expired. Please submit again.');
+      return;
+    }
+
+    const routedChannelId = mapFocusToChannelId(channelFocus, config.channelIds);
+    updatePreviewRoute(previewId, channelFocus, routedChannelId);
+    await refreshPreviewCard(client, body, preview, channelFocus, routedChannelId, app.logger);
+
     const label = CHANNEL_LABELS[channelFocus] || '#jobs';
+    if (!routedChannelId) {
+      await sendDm(client, body.user.id, routeMissingConfigMessage(channelFocus));
+      return;
+    }
     await sendDm(client, body.user.id, `Route preference captured: ${label}`);
+  });
+
+  app.action('job_card_publish', async ({ ack, body, client, logger }) => {
+    await ack();
+    const previewId = body.actions?.[0]?.value;
+    try {
+      await publishPreview({ body, client, config, logger, previewId, expectedKind: POST_KIND.JOB });
+    } catch (error) {
+      logger.error(error);
+      await sendDm(client, body.user.id, 'Publish failed. Please try again.');
+    }
+  });
+
+  app.action('candidate_card_publish', async ({ ack, body, client, logger }) => {
+    await ack();
+    const previewId = body.actions?.[0]?.value;
+    try {
+      await publishPreview({ body, client, config, logger, previewId, expectedKind: POST_KIND.CANDIDATE });
+    } catch (error) {
+      logger.error(error);
+      await sendDm(client, body.user.id, 'Publish failed. Please try again.');
+    }
   });
 }
 

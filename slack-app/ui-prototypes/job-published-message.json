@@ -1,5 +1,5 @@
 {
-  "channel": "U123PREVIEW",
+  "channel": "C123PUBLISHED",
   "text": "Senior Platform Engineer at Steady Orbit Labs, Hybrid in NYC (2 days onsite)",
   "blocks": [
     {
@@ -52,29 +52,14 @@
       }
     },
     {
-      "type": "context",
-      "elements": [
-        {
-          "type": "plain_text",
-          "text": "Suggested destination: #jobs-consulting",
-          "emoji": true
-        },
-        {
-          "type": "plain_text",
-          "text": "Configured channel ID: C123ONSITE",
-          "emoji": true
-        }
-      ]
-    },
-    {
       "type": "actions",
       "elements": [
         {
           "type": "button",
-          "action_id": "job_card_publish",
+          "action_id": "job_published_open_details",
           "text": {
             "type": "plain_text",
-            "text": "Publish",
+            "text": "Open Details",
             "emoji": true
           },
           "style": "primary",
@@ -82,59 +67,65 @@
         },
         {
           "type": "button",
-          "action_id": "job_card_open_details_modal",
+          "action_id": "published_post_edit",
           "text": {
             "type": "plain_text",
-            "text": "Open Details",
+            "text": "Edit",
             "emoji": true
           },
           "value": "job_preview_001"
         },
         {
-          "type": "overflow",
-          "action_id": "job_card_route_channel",
-          "options": [
-            {
-              "text": {
-                "type": "plain_text",
-                "text": "Send to #jobs",
-                "emoji": true
-              },
-              "value": "job_preview_001|jobs"
+          "type": "button",
+          "action_id": "published_post_archive",
+          "text": {
+            "type": "plain_text",
+            "text": "Archive",
+            "emoji": true
+          },
+          "style": "danger",
+          "value": "job_preview_001",
+          "confirm": {
+            "title": {
+              "type": "plain_text",
+              "text": "Archive this posting?",
+              "emoji": true
             },
-            {
-              "text": {
-                "type": "plain_text",
-                "text": "Send to #onsite-jobs",
-                "emoji": true
-              },
-              "value": "job_preview_001|onsite_jobs"
+            "text": {
+              "type": "plain_text",
+              "text": "This will mark the posting as archived in-channel.",
+              "emoji": true
             },
-            {
-              "text": {
-                "type": "plain_text",
-                "text": "Send to #remote-jobs",
-                "emoji": true
-              },
-              "value": "job_preview_001|remote_jobs"
+            "confirm": {
+              "type": "plain_text",
+              "text": "Archive",
+              "emoji": true
             },
-            {
-              "text": {
-                "type": "plain_text",
-                "text": "Send to #jobs-cofounders",
-                "emoji": true
-              },
-              "value": "job_preview_001|jobs_cofounders"
-            },
-            {
-              "text": {
-                "type": "plain_text",
-                "text": "Send to #jobs-consulting",
-                "emoji": true
-              },
-              "value": "job_preview_001|jobs_consulting"
+            "deny": {
+              "type": "plain_text",
+              "text": "Cancel",
+              "emoji": true
             }
-          ]
+          }
+        },
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Open Apply Link",
+            "emoji": true
+          },
+          "url": "https://example.com/jobs/senior-platform-engineer",
+          "action_id": "job_published_apply_link"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Shared via RLS Jobs by <@U123POSTER>"
         }
       ]
     }

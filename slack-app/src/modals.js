@@ -9,6 +9,14 @@ const jobStep1Template = require('../ui-prototypes/job-guided-step-1-modal.json'
 const jobStep2Template = require('../ui-prototypes/job-guided-step-2-modal.json');
 const jobStep3Template = require('../ui-prototypes/job-guided-step-3-modal.json');
 
+function plainText(text) {
+  return {
+    type: 'plain_text',
+    text,
+    emoji: true,
+  };
+}
+
 function clone(template) {
   return JSON.parse(JSON.stringify(template));
 }
@@ -60,11 +68,58 @@ function buildCandidateGuidedStep3Modal(data = {}) {
   return withMetadata(candidateStep3Template, POST_KIND.CANDIDATE, 3, data);
 }
 
+function buildIntakeChooserModal() {
+  return {
+    type: 'modal',
+    callback_id: 'intake_kind_chooser_modal',
+    title: plainText('Start Intake'),
+    submit: plainText('Continue'),
+    close: plainText('Cancel'),
+    blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '*What would you like to share today?*',
+        },
+      },
+      {
+        type: 'input',
+        block_id: 'intake_kind_block',
+        label: plainText('Posting type'),
+        element: {
+          type: 'radio_buttons',
+          action_id: 'intake_kind_action',
+          options: [
+            {
+              text: plainText('Job listing'),
+              value: POST_KIND.JOB,
+            },
+            {
+              text: plainText('Candidate availability'),
+              value: POST_KIND.CANDIDATE,
+            },
+          ],
+          initial_option: {
+            text: plainText('Job listing'),
+            value: POST_KIND.JOB,
+          },
+        },
+      },
+      {
+        type: 'context',
+        elements: [plainText('Tip: you can still pass "job" or "candidate" to the slash command to skip this step.')],
+      },
+    ],
+  };
+}
+
 module.exports = {
   buildCandidateGuidedStep1Modal,
   buildCandidateGuidedStep2Modal,
   buildCandidateGuidedStep3Modal,
   buildCandidateModal,
+  buildIntakeChooserModal,
   buildJobGuidedStep1Modal,
   buildJobGuidedStep2Modal,
   buildJobGuidedStep3Modal,

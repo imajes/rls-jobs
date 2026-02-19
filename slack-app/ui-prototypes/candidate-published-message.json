@@ -1,0 +1,133 @@
+{
+  "channel": "C123PUBLISHED",
+  "text": "Staff Product Engineer / Engineering Manager, Seattle, WA, open to US remote roles",
+  "blocks": [
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_section",
+          "elements": [
+            {
+              "type": "text",
+              "text": "Staff Product Engineer / Engineering Manager",
+              "style": {
+                "bold": true
+              }
+            },
+            {
+              "type": "text",
+              "text": " • Seattle, WA, open to US remote roles"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "📌 Work: Remote, Hybrid",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "🕒 Availability: Open to opportunities",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "💸 $210k+ base + Equity + Bonus",
+          "emoji": true
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "plain_text",
+        "text": "Open to senior IC and EM roles at mission-driven companies.",
+        "emoji": true
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "candidate_published_open_details",
+          "text": {
+            "type": "plain_text",
+            "text": "Open Details",
+            "emoji": true
+          },
+          "style": "primary",
+          "value": "candidate_preview_001"
+        },
+        {
+          "type": "button",
+          "action_id": "published_post_edit",
+          "text": {
+            "type": "plain_text",
+            "text": "Edit",
+            "emoji": true
+          },
+          "value": "candidate_preview_001"
+        },
+        {
+          "type": "button",
+          "action_id": "published_post_archive",
+          "text": {
+            "type": "plain_text",
+            "text": "Archive",
+            "emoji": true
+          },
+          "style": "danger",
+          "value": "candidate_preview_001",
+          "confirm": {
+            "title": {
+              "type": "plain_text",
+              "text": "Archive this posting?",
+              "emoji": true
+            },
+            "text": {
+              "type": "plain_text",
+              "text": "This will mark the posting as archived in-channel.",
+              "emoji": true
+            },
+            "confirm": {
+              "type": "plain_text",
+              "text": "Archive",
+              "emoji": true
+            },
+            "deny": {
+              "type": "plain_text",
+              "text": "Cancel",
+              "emoji": true
+            }
+          }
+        },
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Open Primary Link",
+            "emoji": true
+          },
+          "url": "https://linkedin.com/in/example",
+          "action_id": "candidate_published_primary_link"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Shared via RLS Jobs by <@U123POSTER>"
+        }
+      ]
+    }
+  ]
+}

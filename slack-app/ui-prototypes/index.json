@@ -2,6 +2,7 @@
   "files": [
     "job-posting-modal.json",
     "candidate-profile-modal.json",
+    "intake-chooser-modal.json",
     "job-guided-step-1-modal.json",
     "job-guided-step-2-modal.json",
     "job-guided-step-3-modal.json",
@@ -10,6 +11,11 @@
     "candidate-guided-step-3-modal.json",
     "job-preview-message.json",
     "candidate-preview-message.json",
+    "job-published-message.json",
+    "candidate-published-message.json",
+    "job-edit-modal.json",
+    "candidate-edit-modal.json",
+    "app-home-view.json",
     "job-full-details-message.json",
     "candidate-full-details-message.json"
   ]

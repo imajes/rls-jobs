@@ -21,7 +21,9 @@ function createPreview(kind, values, recommendation, routedChannelId = '') {
     kind,
     values,
     recommendation,
+    channelFocus: recommendation?.key || '',
     routedChannelId,
+    publishedRoutes: [],
     createdAt: now,
     expiresAt: now + PREVIEW_TTL_MS,
   });
@@ -42,7 +44,49 @@ function getPreview(id) {
   return preview;
 }
 
+function updatePreviewRoute(id, channelFocus, routedChannelId = '') {
+  const preview = getPreview(id);
+  if (!preview) {
+    return null;
+  }
+
+  preview.channelFocus = channelFocus || preview.channelFocus;
+  preview.routedChannelId = routedChannelId;
+  return preview;
+}
+
+function markPreviewPublished(id, channelId, messageTs = '') {
+  const preview = getPreview(id);
+  if (!preview) {
+    return null;
+  }
+
+  const existing = preview.publishedRoutes.find((route) => route.channelId === channelId);
+  if (existing) {
+    return preview;
+  }
+
+  preview.publishedRoutes.push({
+    channelId,
+    messageTs,
+    publishedAt: Date.now(),
+  });
+  return preview;
+}
+
+function isPublishedToRoute(id, channelId) {
+  const preview = getPreview(id);
+  if (!preview) {
+    return false;
+  }
+
+  return preview.publishedRoutes.some((route) => route.channelId === channelId);
+}
+
 module.exports = {
   createPreview,
   getPreview,
+  isPublishedToRoute,
+  markPreviewPublished,
+  updatePreviewRoute,
 };
