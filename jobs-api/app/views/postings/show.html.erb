@@ -1,0 +1,89 @@
+<% content_for :title, @posting.title %>
+
+<main class="detail-shell">
+  <section class="detail-hero">
+    <%= link_to "← Back to listings", postings_path(request.query_parameters), class: "back-link" %>
+    <p class="eyebrow"><%= @posting.kind == 'job_posting' ? '💼 Job Listing' : '🧑‍💻 Candidate Listing' %></p>
+    <h1><%= @posting.title %></h1>
+    <p class="hero-copy">
+      <strong>Status:</strong> <%= @posting.status.capitalize %>
+      · <strong>Last event:</strong> <%= @posting.last_event_at&.to_fs(:long) || "Unknown" %>
+    </p>
+    <% if @posting.permalink.present? %>
+      <p><a href="<%= @posting.permalink %>" target="_blank" rel="noopener noreferrer">Open original Slack message</a></p>
+    <% end %>
+  </section>
+
+  <section class="detail-grid">
+    <article class="detail-card">
+      <h2>Structured Fields</h2>
+      <dl>
+        <dt>Company</dt>
+        <dd><%= @posting.company_name.presence || "Not provided" %></dd>
+
+        <dt>Role</dt>
+        <dd><%= @posting.role_title.presence || "Not provided" %></dd>
+
+        <dt>Headline</dt>
+        <dd><%= @posting.headline.presence || "Not provided" %></dd>
+
+        <dt>Location</dt>
+        <dd><%= @posting.location_summary.presence || "Not provided" %></dd>
+
+        <dt>Compensation</dt>
+        <dd><%= @posting.compensation_value.presence || "Not provided" %></dd>
+
+        <dt>Visa policy</dt>
+        <dd><%= @posting.visa_policy.presence || "Not provided" %></dd>
+
+        <dt>Relationship</dt>
+        <dd><%= @posting.relationship.presence || "Not provided" %></dd>
+
+        <dt>Skills</dt>
+        <dd><%= @posting.skills.presence || "Not provided" %></dd>
+
+        <dt>Summary</dt>
+        <dd><%= @posting.summary.presence || "Not provided" %></dd>
+      </dl>
+    </article>
+
+    <article class="detail-card">
+      <h2>Slack Provenance</h2>
+      <dl>
+        <dt>External posting id</dt>
+        <dd><code><%= @posting.external_posting_id %></code></dd>
+
+        <dt>Team</dt>
+        <dd><%= @posting.team_id.presence || "Not provided" %></dd>
+
+        <dt>Channel</dt>
+        <dd><%= @posting.channel_label.presence || @posting.channel_focus.presence || "Not provided" %></dd>
+
+        <dt>Published message ts</dt>
+        <dd><%= @posting.published_message_ts.presence || "Not provided" %></dd>
+
+        <dt>Poster user id</dt>
+        <dd><%= @posting.poster_user_id.presence || "Not provided" %></dd>
+
+        <dt>Published by user id</dt>
+        <dd><%= @posting.published_by_user_id.presence || "Not provided" %></dd>
+
+        <dt>Posted at</dt>
+        <dd><%= @posting.posted_at&.to_fs(:long) || "Not provided" %></dd>
+
+        <dt>Archived at</dt>
+        <dd><%= @posting.archived_at&.to_fs(:long) || "Not archived" %></dd>
+      </dl>
+    </article>
+
+    <article class="detail-card detail-card--wide">
+      <h2>Source Values</h2>
+      <pre><%= JSON.pretty_generate(@values) %></pre>
+    </article>
+
+    <article class="detail-card detail-card--wide">
+      <h2>Last Webhook Payload</h2>
+      <pre><%= JSON.pretty_generate(@payload) %></pre>
+    </article>
+  </section>
+</main>

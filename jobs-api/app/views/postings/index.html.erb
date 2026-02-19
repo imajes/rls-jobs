@@ -1,0 +1,151 @@
+<% content_for :title, "RLS Job Listings" %>
+
+<main class="browse-shell">
+  <section class="browse-hero">
+    <p class="eyebrow">RLS Directory</p>
+    <h1>RLS Job Listings</h1>
+    <p class="hero-copy">
+      Structured openings and candidate signals captured from Slack. Filter quickly, compare opportunities, and open full details without hunting through channel backscroll.
+    </p>
+    <div class="stat-grid" role="list" aria-label="Listing statistics">
+      <div class="stat-card" role="listitem">
+        <p class="stat-label">Total</p>
+        <p class="stat-value"><%= @stats[:total] %></p>
+      </div>
+      <div class="stat-card" role="listitem">
+        <p class="stat-label">Active</p>
+        <p class="stat-value"><%= @stats[:active] %></p>
+      </div>
+      <div class="stat-card" role="listitem">
+        <p class="stat-label">Archived</p>
+        <p class="stat-value"><%= @stats[:archived] %></p>
+      </div>
+      <div class="stat-card" role="listitem">
+        <p class="stat-label">Jobs</p>
+        <p class="stat-value"><%= @stats[:jobs] %></p>
+      </div>
+      <div class="stat-card" role="listitem">
+        <p class="stat-label">Candidates</p>
+        <p class="stat-value"><%= @stats[:candidates] %></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="filter-panel">
+    <h2>Filter Listings</h2>
+    <%= form_with url: postings_path, method: :get, local: true, class: "filter-grid" do %>
+      <label>
+        Search
+        <%= text_field_tag :q, @filters[:q], placeholder: "Role, company, location, skill", class: "text-field" %>
+      </label>
+
+      <label>
+        Kind
+        <%= select_tag :kind, options_for_select([["All", "all"], ["Job", "job_posting"], ["Candidate", "candidate_profile"]], @filters[:kind]), class: "select-field" %>
+      </label>
+
+      <label>
+        Status
+        <%= select_tag :status, options_for_select([["All", "all"], ["Active", "active"], ["Archived", "archived"]], @filters[:status]), class: "select-field" %>
+      </label>
+
+      <label>
+        Channel
+        <%= select_tag :channel_focus, options_for_select([["All", "all"]] + @channel_focuses.map { |focus| [focus.humanize, focus] }, @filters[:channel_focus]), class: "select-field" %>
+      </label>
+
+      <label>
+        Visa
+        <%= select_tag :visa_policy, options_for_select([["Any", "all"], ["Yes", "yes"], ["No", "no"], ["Case by case", "case_by_case"], ["Unknown", "unknown"]], @filters[:visa_policy]), class: "select-field" %>
+      </label>
+
+      <label>
+        Compensation
+        <%= select_tag :has_compensation, options_for_select([["Any", "all"], ["Present", "yes"], ["Missing", "no"]], @filters[:has_compensation]), class: "select-field" %>
+      </label>
+
+      <label>
+        Work arrangement
+        <%= select_tag :work_arrangement, options_for_select([["Any", "all"], ["Remote", "remote"], ["Hybrid", "hybrid"], ["On-site", "onsite"]], @filters[:work_arrangement]), class: "select-field" %>
+      </label>
+
+      <label>
+        Employment type
+        <%= select_tag :employment_type, options_for_select([["Any", "all"], ["Full-time", "full_time"], ["Part-time", "part_time"], ["Contract", "contract"], ["Consulting", "consulting"], ["Cofounder", "cofounder"]], @filters[:employment_type]), class: "select-field" %>
+      </label>
+
+      <label>
+        Sort
+        <%= select_tag :sort, options_for_select([["Recently updated", "recently_updated"], ["Newest", "newest"], ["Oldest", "oldest"], ["Company A-Z", "company_az"], ["Compensation (raw)", "compensation"]], @filters[:sort]), class: "select-field" %>
+      </label>
+
+      <label>
+        Result limit
+        <%= select_tag :limit, options_for_select([["20", 20], ["40", 40], ["60", 60], ["100", 100], ["200", 200]], @filters[:limit]), class: "select-field" %>
+      </label>
+
+      <div class="filter-actions">
+        <%= submit_tag "Apply Filters", class: "button-primary" %>
+        <%= link_to "Reset", postings_path, class: "button-secondary" %>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="results-panel">
+    <div class="results-header">
+      <h2>Results</h2>
+      <p><%= @postings.length %> shown</p>
+    </div>
+
+    <% if @postings.empty? %>
+      <div class="empty-state">
+        <p>No listings match these filters yet.</p>
+        <p>Try broadening search or clearing one or two constraints.</p>
+      </div>
+    <% else %>
+      <div class="posting-grid">
+        <% @postings.each do |posting| %>
+          <% values = posting.values_hash %>
+          <article class="posting-card <%= posting.status == 'archived' ? 'is-archived' : '' %>">
+            <div class="card-top-row">
+              <span class="kind-pill"><%= posting.kind == 'job_posting' ? '💼 Job' : '🧑‍💻 Candidate' %></span>
+              <span class="status-pill <%= posting.status == 'active' ? 'is-active' : 'is-archived' %>"><%= posting.status.capitalize %></span>
+            </div>
+
+            <h3><%= link_to posting.title, posting_path(posting), class: "card-title-link" %></h3>
+
+            <p class="card-meta">
+              <strong>Location:</strong> <%= posting.location_summary.presence || "Not provided" %>
+            </p>
+            <p class="card-meta">
+              <strong>Compensation:</strong> <%= posting.compensation_value.presence || "Not provided" %>
+            </p>
+            <p class="card-meta">
+              <strong>Relationship:</strong> <%= posting.relationship.presence || "Not provided" %>
+            </p>
+
+            <% chip_values = (Array(values["workArrangements"]) + Array(values["employmentTypes"]) + Array(values["engagementTypes"])).uniq %>
+            <% if chip_values.any? %>
+              <div class="chip-row">
+                <% chip_values.each do |chip| %>
+                  <span class="chip"><%= chip.to_s.humanize %></span>
+                <% end %>
+              </div>
+            <% end %>
+
+            <% if posting.summary.present? %>
+              <p class="summary-snippet"><%= truncate(posting.summary, length: 180) %></p>
+            <% end %>
+
+            <div class="card-footer">
+              <span>Updated <%= time_ago_in_words(posting.updated_at) %> ago</span>
+              <% if posting.permalink.present? %>
+                <a href="<%= posting.permalink %>" target="_blank" rel="noopener noreferrer">Open in Slack</a>
+              <% end %>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+</main>
