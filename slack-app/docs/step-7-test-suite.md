@@ -6,6 +6,7 @@ Date: 2026-02-19
 
 - `npm test` -> `node --test test/*.test.js`
 - `npm run test:coverage` -> Node test coverage mode
+- `npm run test:coverage:check` -> enforce line/function/branch thresholds
 
 ## Added test modules
 

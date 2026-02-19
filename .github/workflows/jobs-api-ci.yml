@@ -37,3 +37,19 @@ jobs:
         env:
           RAILS_ENV: test
         run: bin/rails test
+
+      - name: Coverage check
+        env:
+          RAILS_ENV: test
+          COVERAGE: "1"
+          COVERAGE_MIN_LINES: "75"
+          COVERAGE_MIN_BRANCHES: "60"
+        run: bin/rails test
+
+      - name: Upload coverage summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jobs-api-coverage-summary
+          path: jobs-api/coverage/summary.*
+          if-no-files-found: warn

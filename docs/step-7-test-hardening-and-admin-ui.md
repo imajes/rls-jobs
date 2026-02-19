@@ -16,6 +16,7 @@ Completed two major improvements:
 - Added Node-native test harness (`node:test`) with scripts:
   - `npm test`
   - `npm run test:coverage`
+  - `npm run test:coverage:check`
 - Added coverage for:
   - channel routing logic
   - form validation logic
@@ -31,6 +32,9 @@ Completed two major improvements:
   - API edge cases (`/api/v1/intake`, `/api/v1/auth_links`)
   - admin controller flows (`/admin/postings`)
 - Set test parallelism to 1 worker to avoid cross-test `ENV` mutation flakiness.
+- Added opt-in built-in coverage summary/check support via env flags:
+  - `COVERAGE=1 bin/rails test`
+  - `COVERAGE=1 COVERAGE_MIN_LINES=75 COVERAGE_MIN_BRANCHES=60 bin/rails test`
 
 ## Admin UI deliverables
 

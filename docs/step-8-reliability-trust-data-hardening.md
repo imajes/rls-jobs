@@ -59,6 +59,9 @@ This step implements the next-phase production hardening roadmap across `slack-a
 - Added root CI workflows for monorepo operation:
   - `slack-app-ci.yml` (Node 22, `npm ci`, lint, tests)
   - `jobs-api-ci.yml` (Ruby 3.4.5, test DB prepare, tests)
+ - Added coverage checks in CI:
+   - Slack: `npm run test:coverage:check`
+   - Jobs API: `COVERAGE=1` test run with line/branch thresholds and artifact upload (`coverage/summary.*`)
 
 8. Thread enrichment planning package (spec-only)
 - Added ADR documenting boundaries, identity protection rules, retention constraints, interface draft, and implementation go/no-go criteria.
@@ -87,4 +90,3 @@ This step implements the next-phase production hardening roadmap across `slack-a
 - Slack app lint/tests: passed locally.
 - Jobs API: Ruby syntax checks passed on changed files.
 - Full Rails test run could not be executed in this terminal due local Ruby/Bundler mismatch against project requirements (`ruby-3.4.5` / Bundler from lockfile). CI workflow now enforces correct runtime.
-

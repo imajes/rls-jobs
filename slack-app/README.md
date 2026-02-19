@@ -106,6 +106,12 @@ Optional coverage output:
 npm run test:coverage
 ```
 
+Coverage threshold check:
+
+```zsh
+npm run test:coverage:check
+```
+
 ## Environment variables
 
 Required:

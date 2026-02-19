@@ -8,6 +8,7 @@
     "start:prod": "node app.js",
     "test": "node --test test/*.test.js",
     "test:coverage": "node --test --experimental-test-coverage test/*.test.js",
+    "test:coverage:check": "node --test --experimental-test-coverage --test-coverage-lines=85 --test-coverage-functions=85 --test-coverage-branches=60 test/*.test.js",
     "lint": "npx @biomejs/biome check .",
     "lint:fix": "npx @biomejs/biome check --write .",
     "export:ui": "node scripts/export-ui-prototypes.js",

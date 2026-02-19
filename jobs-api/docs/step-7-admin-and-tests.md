@@ -45,3 +45,6 @@ Added `/admin` tooling with RBAC:
 ## Stability guard
 
 - `test/test_helper.rb` now uses one worker to avoid ENV race conditions across tests.
+- `test/test_helper.rb` includes opt-in coverage summary output + threshold enforcement:
+  - `COVERAGE=1 bin/rails test`
+  - `COVERAGE=1 COVERAGE_MIN_LINES=75 COVERAGE_MIN_BRANCHES=60 bin/rails test`

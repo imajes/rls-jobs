@@ -64,6 +64,20 @@ bin/rails db:migrate
 bin/rails test
 ```
 
+Coverage run:
+
+```zsh
+COVERAGE=1 bin/rails test
+```
+
+Coverage threshold run:
+
+```zsh
+COVERAGE=1 COVERAGE_MIN_LINES=75 COVERAGE_MIN_BRANCHES=60 bin/rails test
+```
+
+Coverage summaries are written to `jobs-api/coverage/summary.json` and `jobs-api/coverage/summary.txt`.
+
 Then run server:
 
 ```zsh
