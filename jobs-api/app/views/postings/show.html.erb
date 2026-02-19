@@ -2,7 +2,8 @@
 
 <main class="detail-shell">
   <section class="detail-hero">
-    <%= link_to "← Back to listings", postings_path(request.query_parameters), class: "back-link" %>
+    <% back_path = params[:return_to].presence || postings_path %>
+    <%= link_to "← Back to listings", back_path, class: "back-link" %>
     <p class="eyebrow"><%= @posting.kind == 'job_posting' ? '💼 Job Listing' : '🧑‍💻 Candidate Listing' %></p>
     <h1><%= @posting.title %></h1>
     <p class="hero-copy">

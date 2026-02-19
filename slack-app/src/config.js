@@ -8,6 +8,8 @@ const RECOMMENDED_PUBLISH_ENV_VARS = [
   'RLS_CHANNEL_JOBS_CONSULTING_ID',
 ];
 
+const RECOMMENDED_AUTH_ENV_VARS = ['RLS_JOBS_API_AUTH_LINK_URL'];
+
 function getConfig() {
   return {
     appToken: process.env.SLACK_APP_TOKEN,
@@ -22,6 +24,7 @@ function getConfig() {
     },
     jobsApi: {
       ingestUrl: process.env.RLS_JOBS_API_INGEST_URL || '',
+      authLinkUrl: process.env.RLS_JOBS_API_AUTH_LINK_URL || '',
       token: process.env.RLS_JOBS_API_TOKEN || '',
       timeoutMs: process.env.RLS_JOBS_API_TIMEOUT_MS || '5000',
     },
@@ -36,10 +39,16 @@ function getMissingRecommendedPublishEnv() {
   return RECOMMENDED_PUBLISH_ENV_VARS.filter((key) => !process.env[key]);
 }
 
+function getMissingRecommendedAuthEnv() {
+  return RECOMMENDED_AUTH_ENV_VARS.filter((key) => !process.env[key]);
+}
+
 module.exports = {
   getConfig,
+  getMissingRecommendedAuthEnv,
   getMissingRecommendedPublishEnv,
   getMissingRequiredEnv,
+  RECOMMENDED_AUTH_ENV_VARS,
   RECOMMENDED_PUBLISH_ENV_VARS,
   REQUIRED_ENV_VARS,
 };

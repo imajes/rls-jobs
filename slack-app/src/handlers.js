@@ -4,7 +4,7 @@ const { CHANNEL_LABELS, mapFocusToChannelId, recommendChannel } = require('./cha
 const { buildAppHomeView } = require('./app-home');
 const { POST_KIND } = require('./constants');
 const { buildCandidateDetailsModal, buildJobDetailsModal } = require('./details-modals');
-const { postIntakeEvent } = require('./jobs-api-client');
+const { createAuthLink, postIntakeEvent } = require('./jobs-api-client');
 const {
   buildCandidateGuidedStep1Modal,
   buildCandidateGuidedStep2Modal,
@@ -119,6 +119,17 @@ function inferKindFromCommandText(text) {
 function parseRouteValue(rawValue) {
   const [previewId, channelFocus] = (rawValue || '').split('|');
   return { channelFocus, previewId };
+}
+
+function formatAuthExpiry(expiresAt, ttlSeconds) {
+  if (expiresAt) {
+    return `This link expires at ${expiresAt}.`;
+  }
+  if (ttlSeconds > 0) {
+    const minutes = Math.ceil(ttlSeconds / 60);
+    return `This link expires in about ${minutes} minutes.`;
+  }
+  return 'This link expires shortly.';
 }
 
 function parsePostingActionValue(rawValue, body) {
@@ -386,6 +397,43 @@ function registerHandlers(app, config) {
 
   app.command('/rls-jobs-intake', intakeCommandHandler);
   app.command('/rls-job-intake', intakeCommandHandler);
+
+  const authCommandHandler = async ({ ack, command, client, logger }) => {
+    await ack();
+
+    const authLinkResult = await createAuthLink(
+      config,
+      {
+        slack_user_id: command.user_id,
+        slack_team_id: command.team_id,
+        slack_user_name: command.user_name || '',
+      },
+      logger,
+    );
+
+    if (!authLinkResult.sent) {
+      const reason =
+        authLinkResult.reason === 'not_configured'
+          ? 'The auth link API endpoint is not configured yet.'
+          : `Could not generate auth link (${authLinkResult.reason}).`;
+      await sendDm(
+        client,
+        command.user_id,
+        `${reason} Ask an admin to set RLS_JOBS_API_AUTH_LINK_URL and retry /rls-jobs-auth.`,
+      );
+      return;
+    }
+
+    const expiryMessage = formatAuthExpiry(authLinkResult.expiresAt, authLinkResult.ttlSeconds);
+    await sendDm(
+      client,
+      command.user_id,
+      `Secure one-time access link: ${authLinkResult.authUrl}\n${expiryMessage}\nYour browser session has a hard 1-hour max duration.`,
+    );
+  };
+
+  app.command('/rls-jobs-auth', authCommandHandler);
+  app.command('/rls-job-auth', authCommandHandler);
 
   app.event('app_home_opened', async ({ event, client, logger }) => {
     await publishHome(client, event.user, logger);

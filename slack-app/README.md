@@ -2,7 +2,7 @@
 
 Structured Slack intake for job postings and candidate availability using Bolt for JavaScript.
 
-## Scope implemented through Step Three
+## Scope implemented through Step Six
 
 - Global shortcuts for:
   - `Post a job`
@@ -10,6 +10,8 @@ Structured Slack intake for job postings and candidate availability using Bolt f
 - Slash command:
   - `/rls-jobs-intake` (opens type chooser by default)
   - `/rls-job-intake` (alias for typo-friendly entry)
+  - `/rls-jobs-auth` (issues one-time web auth link via Jobs API)
+  - `/rls-job-auth` (alias for typo-friendly entry)
 - Block Kit modals for both post kinds + intake type chooser
 - Strict required fields with inline modal validation
 - Smart channel recommendation for:
@@ -22,10 +24,13 @@ Structured Slack intake for job postings and candidate availability using Bolt f
 - Route override from preview overflow
 - Publish action that posts to configured destination channel
 - Optional webhook send to jobs API after publish
+- Optional lifecycle webhook send to jobs API on publish/edit/archive
 - App Home view with "Your RLS Postings"
 - Poster-only edit and archive actions for published postings
+- One-time auth link command to bootstrap RLS-gated web session
 
 Step Three packages this for deployment and go-live.
+Step Four/Step Six extend API sync and secure web-auth bootstrap.
 
 Slash command behavior:
 
@@ -101,6 +106,7 @@ Optional:
 - `RLS_CHANNEL_JOBS_COFOUNDERS_ID`
 - `RLS_CHANNEL_JOBS_CONSULTING_ID`
 - `RLS_JOBS_API_INGEST_URL`
+- `RLS_JOBS_API_AUTH_LINK_URL`
 - `RLS_JOBS_API_TOKEN`
 - `RLS_JOBS_API_TIMEOUT_MS`
 

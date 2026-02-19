@@ -8,7 +8,9 @@ module Api
         return if configured_token.blank?
 
         provided = bearer_token
-        return if ActiveSupport::SecurityUtils.secure_compare(provided, configured_token)
+        if provided.present? && provided.bytesize == configured_token.bytesize
+          return if ActiveSupport::SecurityUtils.secure_compare(provided, configured_token)
+        end
 
         render json: { ok: false, error: 'unauthorized' }, status: :unauthorized
       end

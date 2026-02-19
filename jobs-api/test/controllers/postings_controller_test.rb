@@ -31,6 +31,8 @@ class PostingsControllerTest < ActionDispatch::IntegrationTest
       values_payload: { headline: "Staff Security Engineer" }.to_json,
       last_payload: { eventType: "slack_post_published" }.to_json
     )
+
+    authenticate!
   end
 
   test "index loads successfully" do
@@ -52,5 +54,25 @@ class PostingsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, @job.company_name
     assert_includes response.body, @job.role_title
+  end
+
+  test "requires rls session" do
+    delete auth_logout_path
+    get postings_path
+    assert_redirected_to auth_required_path
+  end
+
+  private
+
+  def authenticate!
+    _link, token = AuthLink.issue!(
+      slack_user_id: "UTEST",
+      slack_team_id: "TTEST",
+      slack_user_name: "tester",
+      ttl: 10.minutes
+    )
+
+    get auth_slack_redeem_path(token: token)
+    assert_redirected_to postings_path
   end
 end

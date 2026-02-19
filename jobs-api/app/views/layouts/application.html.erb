@@ -23,6 +23,34 @@
   </head>
 
   <body>
+    <header class="top-bar">
+      <div class="top-bar__inner">
+        <a href="<%= root_path %>" class="top-bar__brand">RLS Jobs Directory</a>
+        <div class="top-bar__meta">
+          <% if rls_authenticated? %>
+            <span>Verified as <code><%= rls_slack_user_id %></code></span>
+            <% if rls_hard_expires_at.present? %>
+              <span>Hard expiry <%= distance_of_time_in_words(Time.current, rls_hard_expires_at) %></span>
+            <% end %>
+            <%= button_to "Sign out", auth_logout_path, method: :delete, class: "top-bar__logout" %>
+          <% else %>
+            <a href="<%= auth_required_path %>">How to authenticate</a>
+          <% end %>
+        </div>
+      </div>
+    </header>
+
+    <% if notice.present? || alert.present? %>
+      <div class="flash-wrap">
+        <% if notice.present? %>
+          <p class="flash flash--notice"><%= notice %></p>
+        <% end %>
+        <% if alert.present? %>
+          <p class="flash flash--alert"><%= alert %></p>
+        <% end %>
+      </div>
+    <% end %>
+
     <%= yield %>
   </body>
 </html>

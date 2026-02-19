@@ -1,7 +1,12 @@
 const { App, LogLevel } = require('@slack/bolt');
 const { config: loadDotenv } = require('dotenv');
 
-const { getConfig, getMissingRecommendedPublishEnv, getMissingRequiredEnv } = require('./config');
+const {
+  getConfig,
+  getMissingRecommendedAuthEnv,
+  getMissingRecommendedPublishEnv,
+  getMissingRequiredEnv,
+} = require('./config');
 const { registerHandlers } = require('./handlers');
 
 loadDotenv();
@@ -45,6 +50,11 @@ async function start() {
     const missingRecommended = getMissingRecommendedPublishEnv();
     if (missingRecommended.length) {
       app.logger.warn(`Missing recommended channel config for publish routes: ${missingRecommended.join(', ')}`);
+    }
+
+    const missingAuthRecommended = getMissingRecommendedAuthEnv();
+    if (missingAuthRecommended.length) {
+      app.logger.warn(`Missing recommended auth-link config: ${missingAuthRecommended.join(', ')}`);
     }
 
     for (const signal of ['SIGINT', 'SIGTERM']) {

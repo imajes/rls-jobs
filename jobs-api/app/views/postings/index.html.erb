@@ -112,7 +112,7 @@
               <span class="status-pill <%= posting.status == 'active' ? 'is-active' : 'is-archived' %>"><%= posting.status.capitalize %></span>
             </div>
 
-            <h3><%= link_to posting.title, posting_path(posting), class: "card-title-link" %></h3>
+            <h3><%= link_to posting.title, posting_path(posting, return_to: request.fullpath), class: "card-title-link" %></h3>
 
             <p class="card-meta">
               <strong>Location:</strong> <%= posting.location_summary.presence || "Not provided" %>

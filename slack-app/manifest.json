@@ -42,6 +42,20 @@
         "description": "Alias for /rls-jobs-intake",
         "usage_hint": "[job|candidate]",
         "should_escape": false
+      },
+      {
+        "command": "/rls-jobs-auth",
+        "url": "https://example.com/slack/commands",
+        "description": "Generate one-time RLS web access link",
+        "usage_hint": "",
+        "should_escape": false
+      },
+      {
+        "command": "/rls-job-auth",
+        "url": "https://example.com/slack/commands",
+        "description": "Alias for /rls-jobs-auth",
+        "usage_hint": "",
+        "should_escape": false
       }
     ]
   },

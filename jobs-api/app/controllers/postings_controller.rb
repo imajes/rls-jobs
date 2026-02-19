@@ -1,4 +1,7 @@
 class PostingsController < ApplicationController
+  before_action :require_rls_session!
+  before_action :refresh_rls_session!
+
   SORT_ORDERS = {
     'recently_updated' => { updated_at: :desc },
     'newest' => { created_at: :desc },

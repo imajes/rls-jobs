@@ -1,0 +1,17 @@
+<% content_for :title, "RLS Access Required" %>
+
+<main class="detail-shell">
+  <section class="detail-hero">
+    <p class="eyebrow">RLS Protected Access</p>
+    <h1>Access requires a Slack-issued one-time link</h1>
+    <p class="hero-copy">
+      This directory is restricted to verified RLS members. In Slack, run
+      <code>/rls-jobs-auth</code>, open your one-time link, and your browser session will be activated.
+    </p>
+    <ul class="auth-list">
+      <li>One-time link validity: 10 minutes (default)</li>
+      <li>Session is activity-refreshed, but hard-capped at 1 hour</li>
+      <li>When it expires, request a new link from Slack</li>
+    </ul>
+  </section>
+</main>

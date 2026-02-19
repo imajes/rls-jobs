@@ -38,6 +38,7 @@ Recommended for full publish routing:
 Optional webhook:
 
 - `RLS_JOBS_API_INGEST_URL`
+- `RLS_JOBS_API_AUTH_LINK_URL` (required for `/rls-jobs-auth`)
 - `RLS_JOBS_API_TOKEN`
 - `RLS_JOBS_API_TIMEOUT_MS` (default `5000`)
 
@@ -48,6 +49,8 @@ Verify `manifest.json` includes:
 - slash commands:
   - `/rls-jobs-intake`
   - `/rls-job-intake`
+  - `/rls-jobs-auth`
+  - `/rls-job-auth`
 - bot scopes:
   - `commands`
   - `chat:write`

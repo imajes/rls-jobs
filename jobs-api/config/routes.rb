@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       post "intake", to: "intake#create"
+      post "auth_links", to: "auth_links#create"
     end
   end
 
@@ -14,6 +15,10 @@ Rails.application.routes.draw do
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+
+  get "auth/required", to: "auth#required", as: :auth_required
+  get "auth/slack/:token", to: "auth#redeem", as: :auth_slack_redeem
+  delete "auth/logout", to: "auth#logout", as: :auth_logout
 
   resources :postings, only: [:index, :show]
   root "postings#index"
