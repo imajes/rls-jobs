@@ -5,9 +5,11 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
+    "start:prod": "node app.js",
     "lint": "npx @biomejs/biome check .",
     "lint:fix": "npx @biomejs/biome check --write .",
-    "export:ui": "node scripts/export-ui-prototypes.js"
+    "export:ui": "node scripts/export-ui-prototypes.js",
+    "check:deploy": "node scripts/check-deploy-readiness.js --strict"
   },
   "author": "RLS Jobs",
   "license": "MIT",

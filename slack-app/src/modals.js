@@ -1,13 +1,14 @@
 const { POST_KIND } = require('./constants');
 
-const candidateFullTemplate = require('../ui-prototypes/candidate-profile-modal.json');
-const candidateStep1Template = require('../ui-prototypes/candidate-guided-step-1-modal.json');
-const candidateStep2Template = require('../ui-prototypes/candidate-guided-step-2-modal.json');
-const candidateStep3Template = require('../ui-prototypes/candidate-guided-step-3-modal.json');
-const jobFullTemplate = require('../ui-prototypes/job-posting-modal.json');
-const jobStep1Template = require('../ui-prototypes/job-guided-step-1-modal.json');
-const jobStep2Template = require('../ui-prototypes/job-guided-step-2-modal.json');
-const jobStep3Template = require('../ui-prototypes/job-guided-step-3-modal.json');
+// Runtime source-of-truth templates for guided modal views.
+const candidateFullTemplate = require('./modal-templates/candidate-profile-modal.json');
+const candidateStep1Template = require('./modal-templates/candidate-guided-step-1-modal.json');
+const candidateStep2Template = require('./modal-templates/candidate-guided-step-2-modal.json');
+const candidateStep3Template = require('./modal-templates/candidate-guided-step-3-modal.json');
+const jobFullTemplate = require('./modal-templates/job-posting-modal.json');
+const jobStep1Template = require('./modal-templates/job-guided-step-1-modal.json');
+const jobStep2Template = require('./modal-templates/job-guided-step-2-modal.json');
+const jobStep3Template = require('./modal-templates/job-guided-step-3-modal.json');
 
 function plainText(text) {
   return {

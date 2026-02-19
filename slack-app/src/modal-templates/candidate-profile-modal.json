@@ -1,10 +1,10 @@
 {
   "type": "modal",
-  "callback_id": "job_posting_submit",
-  "private_metadata": "{\"post_kind\":\"job_posting\"}",
+  "callback_id": "candidate_profile_submit",
+  "private_metadata": "{\"post_kind\":\"candidate_profile\"}",
   "title": {
     "type": "plain_text",
-    "text": "Share Opportunity",
+    "text": "Share Candidate Profile",
     "emoji": true
   },
   "submit": {
@@ -22,7 +22,7 @@
       "type": "section",
       "text": {
         "type": "plain_text",
-        "text": "You are about two minutes away from posting a clean, high-signal opportunity card.",
+        "text": "A strong profile card helps the right people find this candidate quickly.",
         "emoji": true
       }
     },
@@ -39,44 +39,19 @@
     },
     {
       "type": "input",
-      "block_id": "job_company_name_block",
+      "block_id": "candidate_headline_block",
       "label": {
         "type": "plain_text",
-        "text": "Company",
+        "text": "Target role(s)",
         "emoji": true
       },
       "element": {
         "type": "plain_text_input",
-        "action_id": "job_company_name_input",
+        "action_id": "candidate_headline_input",
         "multiline": false,
         "placeholder": {
           "type": "plain_text",
-          "text": "Example: Pied Piper or Stealth",
-          "emoji": true
-        }
-      },
-      "optional": false,
-      "hint": {
-        "type": "plain_text",
-        "text": "For confidential listings, include the word Stealth.",
-        "emoji": true
-      }
-    },
-    {
-      "type": "input",
-      "block_id": "job_role_title_block",
-      "label": {
-        "type": "plain_text",
-        "text": "Role",
-        "emoji": true
-      },
-      "element": {
-        "type": "plain_text_input",
-        "action_id": "job_role_title_input",
-        "multiline": false,
-        "placeholder": {
-          "type": "plain_text",
-          "text": "Example: Principal Engineer, Infrastructure",
+          "text": "Example: Staff Engineer, Product Engineer, EM",
           "emoji": true
         }
       },
@@ -84,7 +59,7 @@
     },
     {
       "type": "input",
-      "block_id": "job_location_summary_block",
+      "block_id": "candidate_location_summary_block",
       "label": {
         "type": "plain_text",
         "text": "Location",
@@ -92,11 +67,11 @@
       },
       "element": {
         "type": "plain_text_input",
-        "action_id": "job_location_summary_input",
+        "action_id": "candidate_location_summary_input",
         "multiline": false,
         "placeholder": {
           "type": "plain_text",
-          "text": "City, region, or remote constraints",
+          "text": "City, region, timezone, relocation constraints",
           "emoji": true
         }
       },
@@ -115,15 +90,15 @@
     },
     {
       "type": "input",
-      "block_id": "job_employment_types_block",
+      "block_id": "candidate_engagement_types_block",
       "label": {
         "type": "plain_text",
-        "text": "Employment types",
+        "text": "Engagement types",
         "emoji": true
       },
       "element": {
         "type": "checkboxes",
-        "action_id": "job_employment_types_checkbox",
+        "action_id": "candidate_engagement_types_checkbox",
         "options": [
           {
             "text": {
@@ -160,7 +135,7 @@
           {
             "text": {
               "type": "plain_text",
-              "text": "Cofounder or founding role",
+              "text": "Cofounder",
               "emoji": true
             },
             "value": "cofounder"
@@ -171,7 +146,7 @@
     },
     {
       "type": "input",
-      "block_id": "job_work_arrangements_block",
+      "block_id": "candidate_work_arrangements_block",
       "label": {
         "type": "plain_text",
         "text": "Work arrangements",
@@ -179,7 +154,7 @@
       },
       "element": {
         "type": "checkboxes",
-        "action_id": "job_work_arrangements_checkbox",
+        "action_id": "candidate_work_arrangements_checkbox",
         "options": [
           {
             "text": {
@@ -218,6 +193,54 @@
       "optional": false
     },
     {
+      "type": "input",
+      "block_id": "candidate_availability_modes_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Availability",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "candidate_availability_modes_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Actively interviewing",
+              "emoji": true
+            },
+            "value": "actively_interviewing"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Open to opportunities",
+              "emoji": true
+            },
+            "value": "open_to_opportunities"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Contract or consulting only",
+              "emoji": true
+            },
+            "value": "contract_only"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Cofounder only",
+              "emoji": true
+            },
+            "value": "cofounder_only"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
       "type": "divider"
     },
     {
@@ -230,32 +253,75 @@
     },
     {
       "type": "input",
-      "block_id": "job_compensation_value_block",
+      "block_id": "candidate_compensation_disclosure_block",
       "label": {
         "type": "plain_text",
-        "text": "Base pay or range",
+        "text": "Disclosure",
+        "emoji": true
+      },
+      "element": {
+        "type": "radio_buttons",
+        "action_id": "candidate_compensation_disclosure_radio",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Range provided",
+              "emoji": true
+            },
+            "value": "range_provided"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Negotiable or TBD",
+              "emoji": true
+            },
+            "value": "negotiable"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not listed",
+              "emoji": true
+            },
+            "value": "not_listed"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Commission or variable",
+              "emoji": true
+            },
+            "value": "performance_based"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_compensation_value_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Pay number or range",
         "emoji": true
       },
       "element": {
         "type": "plain_text_input",
-        "action_id": "job_compensation_value_input",
+        "action_id": "candidate_compensation_value_input",
         "multiline": false,
         "placeholder": {
           "type": "plain_text",
-          "text": "Examples: $100-$200k USD, 1-4%, or Negotiable",
+          "text": "Examples: $180-$220k USD, 1-4%, or Negotiable",
           "emoji": true
         }
       },
-      "optional": false,
-      "hint": {
-        "type": "plain_text",
-        "text": "A concrete number or range is best.",
-        "emoji": true
-      }
+      "optional": false
     },
     {
       "type": "input",
-      "block_id": "job_compensation_components_block",
+      "block_id": "candidate_compensation_components_block",
       "label": {
         "type": "plain_text",
         "text": "Components",
@@ -263,7 +329,7 @@
       },
       "element": {
         "type": "checkboxes",
-        "action_id": "job_compensation_components_checkbox",
+        "action_id": "candidate_compensation_components_checkbox",
         "options": [
           {
             "text": {
@@ -306,31 +372,31 @@
     },
     {
       "type": "input",
-      "block_id": "job_visa_policy_block",
+      "block_id": "candidate_visa_policy_block",
       "label": {
         "type": "plain_text",
-        "text": "Visa sponsorship",
+        "text": "Work authorization or visa",
         "emoji": true
       },
       "element": {
         "type": "radio_buttons",
-        "action_id": "job_visa_policy_radio",
+        "action_id": "candidate_visa_policy_radio",
         "options": [
           {
             "text": {
               "type": "plain_text",
-              "text": "Can sponsor visa",
+              "text": "Authorized, no sponsorship needed",
               "emoji": true
             },
-            "value": "yes"
+            "value": "no"
           },
           {
             "text": {
               "type": "plain_text",
-              "text": "Cannot sponsor visa",
+              "text": "Will require sponsorship",
               "emoji": true
             },
-            "value": "no"
+            "value": "yes"
           },
           {
             "text": {
@@ -343,7 +409,7 @@
           {
             "text": {
               "type": "plain_text",
-              "text": "Unknown",
+              "text": "Prefer not to say",
               "emoji": true
             },
             "value": "unknown"
@@ -354,47 +420,31 @@
     },
     {
       "type": "input",
-      "block_id": "job_relationship_block",
+      "block_id": "candidate_relationship_block",
       "label": {
         "type": "plain_text",
-        "text": "Relationship to this role",
+        "text": "Relationship",
         "emoji": true
       },
       "element": {
         "type": "radio_buttons",
-        "action_id": "job_relationship_radio",
+        "action_id": "candidate_relationship_radio",
         "options": [
           {
             "text": {
               "type": "plain_text",
-              "text": "Hiring manager",
+              "text": "I am the candidate",
               "emoji": true
             },
-            "value": "hiring_manager"
+            "value": "candidate_self"
           },
           {
             "text": {
               "type": "plain_text",
-              "text": "Team member",
-              "emoji": true
-            },
-            "value": "team_member"
-          },
-          {
-            "text": {
-              "type": "plain_text",
-              "text": "Recruiter",
+              "text": "Recruiter or sourcer",
               "emoji": true
             },
             "value": "recruiter"
-          },
-          {
-            "text": {
-              "type": "plain_text",
-              "text": "Can refer or introduce",
-              "emoji": true
-            },
-            "value": "referral"
           },
           {
             "text": {
@@ -410,7 +460,7 @@
     },
     {
       "type": "input",
-      "block_id": "job_links_block",
+      "block_id": "candidate_links_block",
       "label": {
         "type": "plain_text",
         "text": "Links",
@@ -418,11 +468,11 @@
       },
       "element": {
         "type": "plain_text_input",
-        "action_id": "job_links_input",
+        "action_id": "candidate_links_input",
         "multiline": true,
         "placeholder": {
           "type": "plain_text",
-          "text": "One URL per line or comma-separated",
+          "text": "Portfolio, resume, LinkedIn, GitHub. One per line.",
           "emoji": true
         }
       },
@@ -430,7 +480,7 @@
     },
     {
       "type": "input",
-      "block_id": "job_skills_block",
+      "block_id": "candidate_skills_block",
       "label": {
         "type": "plain_text",
         "text": "Skills",
@@ -438,7 +488,7 @@
       },
       "element": {
         "type": "plain_text_input",
-        "action_id": "job_skills_input",
+        "action_id": "candidate_skills_input",
         "multiline": false,
         "placeholder": {
           "type": "plain_text",
@@ -450,19 +500,19 @@
     },
     {
       "type": "input",
-      "block_id": "job_summary_block",
+      "block_id": "candidate_notes_block",
       "label": {
         "type": "plain_text",
-        "text": "Summary",
+        "text": "Notes",
         "emoji": true
       },
       "element": {
         "type": "plain_text_input",
-        "action_id": "job_summary_input",
+        "action_id": "candidate_notes_input",
         "multiline": true,
         "placeholder": {
           "type": "plain_text",
-          "text": "Two to five concise lines",
+          "text": "Anything helpful for matching",
           "emoji": true
         }
       },
@@ -481,7 +531,7 @@
     },
     {
       "type": "input",
-      "block_id": "job_thread_questions_block",
+      "block_id": "candidate_thread_questions_block",
       "label": {
         "type": "plain_text",
         "text": "Thread settings",
@@ -489,12 +539,12 @@
       },
       "element": {
         "type": "checkboxes",
-        "action_id": "job_thread_questions_checkbox",
+        "action_id": "candidate_thread_questions_checkbox",
         "options": [
           {
             "text": {
               "type": "plain_text",
-              "text": "Open to thread questions on this post",
+              "text": "Open to thread replies on this profile",
               "emoji": true
             },
             "value": "allow_thread_questions"

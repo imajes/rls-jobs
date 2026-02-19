@@ -1,0 +1,212 @@
+{
+  "type": "modal",
+  "callback_id": "candidate_profile_guided_step_3",
+  "private_metadata": "{\"kind\":\"candidate_profile\",\"flow\":\"guided\",\"step\":3,\"data\":{}}",
+  "title": {
+    "type": "plain_text",
+    "text": "Share Candidate (3/3)",
+    "emoji": true
+  },
+  "submit": {
+    "type": "plain_text",
+    "text": "Review Card",
+    "emoji": true
+  },
+  "close": {
+    "type": "plain_text",
+    "text": "Cancel",
+    "emoji": true
+  },
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "plain_text",
+        "text": "Final step. Add context and links, then review the candidate card.",
+        "emoji": true
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Step 3: Context and Links",
+        "emoji": true
+      }
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_visa_policy_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Work authorization or visa",
+        "emoji": true
+      },
+      "element": {
+        "type": "radio_buttons",
+        "action_id": "candidate_visa_policy_radio",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Authorized, no sponsorship needed",
+              "emoji": true
+            },
+            "value": "no"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Will require sponsorship",
+              "emoji": true
+            },
+            "value": "yes"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Case-by-case",
+              "emoji": true
+            },
+            "value": "case_by_case"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Prefer not to say",
+              "emoji": true
+            },
+            "value": "unknown"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_relationship_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Relationship",
+        "emoji": true
+      },
+      "element": {
+        "type": "radio_buttons",
+        "action_id": "candidate_relationship_radio",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "I am the candidate",
+              "emoji": true
+            },
+            "value": "candidate_self"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Recruiter or sourcer",
+              "emoji": true
+            },
+            "value": "recruiter"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Other",
+              "emoji": true
+            },
+            "value": "other"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_links_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Links",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "candidate_links_input",
+        "multiline": true,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Portfolio, resume, LinkedIn, GitHub. One per line.",
+          "emoji": true
+        }
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_skills_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Skills",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "candidate_skills_input",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Comma-separated",
+          "emoji": true
+        }
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_notes_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Notes",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "candidate_notes_input",
+        "multiline": true,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Anything helpful for matching",
+          "emoji": true
+        }
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_thread_questions_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Thread settings",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "candidate_thread_questions_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Open to thread replies on this profile",
+              "emoji": true
+            },
+            "value": "allow_thread_questions"
+          }
+        ]
+      },
+      "optional": true
+    }
+  ]
+}

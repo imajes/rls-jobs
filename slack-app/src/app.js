@@ -1,7 +1,7 @@
 const { App, LogLevel } = require('@slack/bolt');
 const { config: loadDotenv } = require('dotenv');
 
-const { getConfig } = require('./config');
+const { getConfig, getMissingRecommendedPublishEnv, getMissingRequiredEnv } = require('./config');
 const { registerHandlers } = require('./handlers');
 
 loadDotenv();
@@ -19,6 +19,11 @@ function parseLogLevel(value) {
 
 function buildApp() {
   const config = getConfig();
+  const missingRequired = getMissingRequiredEnv();
+  if (missingRequired.length) {
+    throw new Error(`Missing required environment variables: ${missingRequired.join(', ')}`);
+  }
+
   const app = new App({
     token: config.botToken,
     socketMode: true,
@@ -36,8 +41,27 @@ async function start() {
   try {
     await app.start();
     app.logger.info('RLS jobs Bolt app is running');
+
+    const missingRecommended = getMissingRecommendedPublishEnv();
+    if (missingRecommended.length) {
+      app.logger.warn(`Missing recommended channel config for publish routes: ${missingRecommended.join(', ')}`);
+    }
+
+    for (const signal of ['SIGINT', 'SIGTERM']) {
+      process.on(signal, async () => {
+        app.logger.info(`Received ${signal}. Stopping app...`);
+        try {
+          await app.stop();
+          process.exit(0);
+        } catch (error) {
+          app.logger.error('Failed to stop app cleanly', error);
+          process.exit(1);
+        }
+      });
+    }
   } catch (error) {
-    app.logger.error('Failed to start app', error);
+    // App logger may not be available if buildApp threw before creation.
+    console.error('Failed to start app', error);
     process.exitCode = 1;
   }
 }

@@ -1,3 +1,13 @@
+const REQUIRED_ENV_VARS = ['SLACK_APP_TOKEN', 'SLACK_BOT_TOKEN'];
+
+const RECOMMENDED_PUBLISH_ENV_VARS = [
+  'RLS_CHANNEL_JOBS_ID',
+  'RLS_CHANNEL_ONSITE_JOBS_ID',
+  'RLS_CHANNEL_REMOTE_JOBS_ID',
+  'RLS_CHANNEL_JOBS_COFOUNDERS_ID',
+  'RLS_CHANNEL_JOBS_CONSULTING_ID',
+];
+
 function getConfig() {
   return {
     appToken: process.env.SLACK_APP_TOKEN,
@@ -18,4 +28,18 @@ function getConfig() {
   };
 }
 
-module.exports = { getConfig };
+function getMissingRequiredEnv() {
+  return REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+}
+
+function getMissingRecommendedPublishEnv() {
+  return RECOMMENDED_PUBLISH_ENV_VARS.filter((key) => !process.env[key]);
+}
+
+module.exports = {
+  getConfig,
+  getMissingRecommendedPublishEnv,
+  getMissingRequiredEnv,
+  RECOMMENDED_PUBLISH_ENV_VARS,
+  REQUIRED_ENV_VARS,
+};

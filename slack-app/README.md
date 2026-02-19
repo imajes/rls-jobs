@@ -2,7 +2,7 @@
 
 Structured Slack intake for job postings and candidate availability using Bolt for JavaScript.
 
-## Scope implemented in Step Two
+## Scope implemented through Step Three
 
 - Global shortcuts for:
   - `Post a job`
@@ -47,6 +47,38 @@ npm install
 npm start
 ```
 
+## Deploy readiness
+
+Run strict go-live checks before deploying:
+
+```zsh
+npm run check:deploy
+```
+
+This validates:
+
+- required runtime env vars
+- recommended route channel env vars
+- manifest command/event/scope expectations
+
+## Container packaging
+
+Build image:
+
+```zsh
+docker build -t rls-jobs-slack-app:latest .
+```
+
+Run image:
+
+```zsh
+docker run --rm \
+  --env-file .env \
+  rls-jobs-slack-app:latest
+```
+
+The app runs in Socket Mode, so no inbound HTTP port is required.
+
 ## Lint
 
 ```zsh
@@ -75,7 +107,10 @@ Optional:
 ## Notes
 
 - This app uses Socket Mode for local development.
+- Runtime modal templates live in `src/modal-templates/`.
+- `ui-prototypes/` is for design/preview exports and is not required at runtime.
 - Slash command request URLs are placeholders in the manifest when using Socket Mode.
 - Incoming Slack request signature verification is handled by Bolt.
 - For publishing to private channels, invite the bot to each target channel.
 - After manifest changes, reinstall or update app settings so `app_home_opened` events are enabled.
+- For production rollout, see `slack-app/docs/step-3-go-live.md`.

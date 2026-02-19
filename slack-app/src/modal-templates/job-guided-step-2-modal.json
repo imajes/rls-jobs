@@ -1,0 +1,156 @@
+{
+  "type": "modal",
+  "callback_id": "job_posting_guided_step_2",
+  "private_metadata": "{\"kind\":\"job_posting\",\"flow\":\"guided\",\"step\":2,\"data\":{}}",
+  "title": {
+    "type": "plain_text",
+    "text": "Share Opportunity (2/3)",
+    "emoji": true
+  },
+  "submit": {
+    "type": "plain_text",
+    "text": "Next",
+    "emoji": true
+  },
+  "close": {
+    "type": "plain_text",
+    "text": "Cancel",
+    "emoji": true
+  },
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "plain_text",
+        "text": "Now add role shape and compensation. This is what makes the card truly useful.",
+        "emoji": true
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Step 2: Role and Compensation",
+        "emoji": true
+      }
+    },
+    {
+      "type": "input",
+      "block_id": "job_employment_types_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Employment types",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "job_employment_types_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Full-time",
+              "emoji": true
+            },
+            "value": "full_time"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Part-time",
+              "emoji": true
+            },
+            "value": "part_time"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Contract",
+              "emoji": true
+            },
+            "value": "contract"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Consulting",
+              "emoji": true
+            },
+            "value": "consulting"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Cofounder or founding role",
+              "emoji": true
+            },
+            "value": "cofounder"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_compensation_value_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Base pay or range",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_compensation_value_input",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Examples: $100-$200k USD, 1-4%, or Negotiable",
+          "emoji": true
+        }
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_compensation_components_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Components",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "job_compensation_components_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Equity",
+              "emoji": true
+            },
+            "value": "equity"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Bonus",
+              "emoji": true
+            },
+            "value": "bonus"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Commission",
+              "emoji": true
+            },
+            "value": "commission"
+          }
+        ]
+      },
+      "optional": true
+    }
+  ]
+}
