@@ -1,0 +1,201 @@
+{
+  "type": "modal",
+  "callback_id": "job_full_details_modal",
+  "title": {
+    "type": "plain_text",
+    "text": "Opportunity Details",
+    "emoji": true
+  },
+  "close": {
+    "type": "plain_text",
+    "text": "Close",
+    "emoji": true
+  },
+  "blocks": [
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_section",
+          "elements": [
+            {
+              "type": "text",
+              "text": "Senior Platform Engineer",
+              "style": {
+                "bold": true
+              }
+            },
+            {
+              "type": "text",
+              "text": " at Steady Orbit Labs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "📍 Hybrid in NYC (2 days onsite)",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "💼 Full-time, Contract",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "💸 $185k-$230k USD + Equity + Bonus",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "🛂 Visa: Case-by-case",
+          "emoji": true
+        }
+      ]
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Why this role matters*"
+      }
+    },
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_list",
+          "style": "bullet",
+          "elements": [
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "Own reliability and platform quality for high-throughput systems."
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "Shape architecture decisions with product and infrastructure partners."
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "Work setup: Hybrid, On-site"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_quote",
+          "elements": [
+            {
+              "type": "text",
+              "text": "Build and scale data-heavy systems, improve reliability posture, and partner closely with product engineering teams."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Apply Link*"
+      },
+      "accessory": {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "text": "Open Role",
+          "emoji": true
+        },
+        "url": "https://example.com/jobs/senior-platform-engineer",
+        "action_id": "job_details_link_1"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<https://example.com/jobs/senior-platform-engineer|https://example.com/jobs/senior-platform-engineer>"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Additional Link*"
+      },
+      "accessory": {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "text": "Open Link",
+          "emoji": true
+        },
+        "url": "https://steadyorbitlabs.com/careers/platform-engineering",
+        "action_id": "job_details_link_2"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<https://steadyorbitlabs.com/careers/platform-engineering|https://steadyorbitlabs.com/careers/platform-engineering>"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "job_details_quick_apply",
+          "text": {
+            "type": "plain_text",
+            "text": "Quick Apply",
+            "emoji": true
+          },
+          "style": "primary",
+          "value": "job_preview_001"
+        },
+        {
+          "type": "button",
+          "action_id": "job_details_save",
+          "text": {
+            "type": "plain_text",
+            "text": "Save to My List",
+            "emoji": true
+          },
+          "value": "job_preview_001"
+        }
+      ]
+    }
+  ]
+}

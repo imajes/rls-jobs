@@ -1,48 +1,150 @@
 {
   "channel": "U123PREVIEW",
-  "text": "Job preview routed to #onsite-jobs",
+  "text": "Senior Platform Engineer at Steady Orbit Labs, Hybrid in NYC (2 days onsite)",
   "blocks": [
     {
-      "type": "header",
-      "text": {
-        "type": "plain_text",
-        "text": "Job Post Preview",
-        "emoji": true
-      }
-    },
-    {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "*Company:* Steady Orbit Labs\n*Role:* Senior Platform Engineer\n*Employment type:* full_time\n*Location:* Hybrid in NYC (2 days onsite)\n*Work arrangement:* hybrid\n*Compensation:* $185k - $230k base + equity\n*Visa:* case_by_case\n*Relationship:* hiring_manager\n*Skills:* Ruby, Postgres, AWS, Terraform\n*Link:* https://example.com/jobs/senior-platform-engineer"
-      }
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_section",
+          "elements": [
+            {
+              "type": "text",
+              "text": "Senior Platform Engineer",
+              "style": {
+                "bold": true
+              }
+            },
+            {
+              "type": "text",
+              "text": " at Steady Orbit Labs, Hybrid in NYC (2 days onsite)"
+            }
+          ]
+        }
+      ]
     },
     {
       "type": "context",
       "elements": [
         {
-          "type": "mrkdwn",
-          "text": "Recommended channel: *#onsite-jobs* (onsite_or_hybrid_work_arrangement)"
+          "type": "plain_text",
+          "text": "💼 Full-time, Contract",
+          "emoji": true
         },
         {
-          "type": "mrkdwn",
-          "text": "Channel ID configured: `C123JOBS`"
+          "type": "plain_text",
+          "text": "💸 $185k-$230k USD + Equity + Bonus",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "🛂 Visa: Case-by-case",
+          "emoji": true
         }
       ]
     },
     {
       "type": "section",
       "text": {
-        "type": "mrkdwn",
-        "text": "*Summary*\nBuild and scale data-heavy systems, improve reliability posture, and partner with product engineering teams."
+        "type": "plain_text",
+        "text": "Build and scale data-heavy systems, improve reliability posture, and partner closely with product engineering teams.",
+        "emoji": true
       }
     },
     {
       "type": "context",
       "elements": [
         {
-          "type": "mrkdwn",
-          "text": "Step One preview only. Channel posting and API ingestion are wired in Step Two."
+          "type": "plain_text",
+          "text": "Suggested destination: #jobs-consulting",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "Configured channel ID: C123ONSITE",
+          "emoji": true
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "job_card_open_details_modal",
+          "text": {
+            "type": "plain_text",
+            "text": "Open Details",
+            "emoji": true
+          },
+          "style": "primary",
+          "value": "job_preview_001"
+        },
+        {
+          "type": "button",
+          "action_id": "job_card_quick_apply",
+          "text": {
+            "type": "plain_text",
+            "text": "Quick Apply",
+            "emoji": true
+          },
+          "value": "job_preview_001"
+        },
+        {
+          "type": "button",
+          "action_id": "job_card_save",
+          "text": {
+            "type": "plain_text",
+            "text": "Save",
+            "emoji": true
+          },
+          "value": "job_preview_001"
+        },
+        {
+          "type": "overflow",
+          "action_id": "job_card_route_channel",
+          "options": [
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Send to #jobs",
+                "emoji": true
+              },
+              "value": "job_preview_001|jobs"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Send to #onsite-jobs",
+                "emoji": true
+              },
+              "value": "job_preview_001|onsite_jobs"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Send to #remote-jobs",
+                "emoji": true
+              },
+              "value": "job_preview_001|remote_jobs"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Send to #jobs-cofounders",
+                "emoji": true
+              },
+              "value": "job_preview_001|jobs_cofounders"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Send to #jobs-consulting",
+                "emoji": true
+              },
+              "value": "job_preview_001|jobs_consulting"
+            }
+          ]
         }
       ]
     }

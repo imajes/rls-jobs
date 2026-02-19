@@ -1,48 +1,140 @@
 {
   "channel": "U123PREVIEW",
-  "text": "Candidate preview routed to #remote-jobs",
+  "text": "Staff Product Engineer / Engineering Manager, Seattle, WA, open to US remote roles",
   "blocks": [
     {
-      "type": "header",
-      "text": {
-        "type": "plain_text",
-        "text": "Candidate Post Preview",
-        "emoji": true
-      }
-    },
-    {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "*Target role(s):* Staff Product Engineer / Engineering Manager\n*Location:* Seattle, WA, open to remote roles in US time zones\n*Work preference:* remote\n*Availability:* open_to_opportunities\n*Compensation:* $210k+ base, open to total comp discussion\n*Visa/work authorization:* unknown\n*Relationship:* candidate_self\n*Skills:* JavaScript, TypeScript, Rails, Product strategy\n*Links:* https://linkedin.com/in/example, https://github.com/example"
-      }
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_section",
+          "elements": [
+            {
+              "type": "text",
+              "text": "Staff Product Engineer / Engineering Manager",
+              "style": {
+                "bold": true
+              }
+            },
+            {
+              "type": "text",
+              "text": " • Seattle, WA, open to US remote roles"
+            }
+          ]
+        }
+      ]
     },
     {
       "type": "context",
       "elements": [
         {
-          "type": "mrkdwn",
-          "text": "Recommended channel: *#remote-jobs* (candidate_remote_preference)"
+          "type": "plain_text",
+          "text": "📌 Work: Remote, Hybrid",
+          "emoji": true
         },
         {
-          "type": "mrkdwn",
-          "text": "Channel ID configured: `C456REMOTE`"
+          "type": "plain_text",
+          "text": "🕒 Availability: Open to opportunities",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "💸 $210k+ base + Equity + Bonus",
+          "emoji": true
         }
       ]
     },
     {
       "type": "section",
       "text": {
-        "type": "mrkdwn",
-        "text": "*Notes*\nOpen to senior IC and EM roles at mission-driven companies."
+        "type": "plain_text",
+        "text": "Open to senior IC and EM roles at mission-driven companies.",
+        "emoji": true
       }
     },
     {
       "type": "context",
       "elements": [
         {
-          "type": "mrkdwn",
-          "text": "Step One preview only. Channel posting and API ingestion are wired in Step Two."
+          "type": "plain_text",
+          "text": "Suggested destination: #jobs",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "Configured channel ID: C456REMOTE",
+          "emoji": true
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "candidate_card_open_details_modal",
+          "text": {
+            "type": "plain_text",
+            "text": "Open Details",
+            "emoji": true
+          },
+          "style": "primary",
+          "value": "candidate_preview_001"
+        },
+        {
+          "type": "button",
+          "action_id": "candidate_card_save",
+          "text": {
+            "type": "plain_text",
+            "text": "Save",
+            "emoji": true
+          },
+          "value": "candidate_preview_001"
+        },
+        {
+          "type": "overflow",
+          "action_id": "candidate_card_route_channel",
+          "options": [
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Send to #jobs",
+                "emoji": true
+              },
+              "value": "candidate_preview_001|jobs"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Send to #onsite-jobs",
+                "emoji": true
+              },
+              "value": "candidate_preview_001|onsite_jobs"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Send to #remote-jobs",
+                "emoji": true
+              },
+              "value": "candidate_preview_001|remote_jobs"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Send to #jobs-cofounders",
+                "emoji": true
+              },
+              "value": "candidate_preview_001|jobs_cofounders"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "Send to #jobs-consulting",
+                "emoji": true
+              },
+              "value": "candidate_preview_001|jobs_consulting"
+            }
+          ]
         }
       ]
     }

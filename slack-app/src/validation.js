@@ -1,45 +1,68 @@
-const { COMP_DISCLOSURE } = require('./constants');
 const { FIELD_IDS } = require('./field-ids');
 
-function looksLikeUrl(value) {
+function splitLinks(value) {
   if (!value) {
-    return true;
+    return [];
   }
 
+  return value
+    .split(/[\n,]/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function looksLikeUrl(value) {
   return /^https?:\/\//i.test(value);
 }
 
-function validateJobSubmission(values) {
+function validateLinkField(value, blockId, errors) {
+  const invalid = splitLinks(value).find((link) => !looksLikeUrl(link));
+  if (invalid) {
+    errors[blockId] = 'Links must start with http:// or https://';
+  }
+}
+
+function validateJobStep1(values) {
   const ids = FIELD_IDS.job;
   const errors = {};
 
-  if (!values.stealthCompany && !values.companyName) {
-    errors[ids.companyName[0]] = 'Company name is required unless stealth mode is enabled.';
+  if (!values.companyName) {
+    errors[ids.companyName[0]] = 'Company is required.';
   }
 
   if (!values.roleTitle) {
-    errors[ids.roleTitle[0]] = 'Role title is required.';
-  }
-
-  if (!values.employmentType) {
-    errors[ids.employmentType[0]] = 'Select an employment type.';
+    errors[ids.roleTitle[0]] = 'Role is required.';
   }
 
   if (!values.locationSummary) {
-    errors[ids.locationSummary[0]] = 'Location details are required.';
+    errors[ids.locationSummary[0]] = 'Location is required.';
   }
 
-  if (!values.workArrangement) {
-    errors[ids.workArrangement[0]] = 'Select a work arrangement.';
+  if (!values.workArrangements.length) {
+    errors[ids.workArrangements[0]] = 'Select at least one work arrangement.';
   }
 
-  if (!values.compensationDisclosure) {
-    errors[ids.compensationDisclosure[0]] = 'Select compensation disclosure status.';
+  return errors;
+}
+
+function validateJobStep2(values) {
+  const ids = FIELD_IDS.job;
+  const errors = {};
+
+  if (!values.employmentTypes.length) {
+    errors[ids.employmentTypes[0]] = 'Select at least one employment type.';
   }
 
-  if (values.compensationDisclosure === COMP_DISCLOSURE.RANGE && !values.compensationRange) {
-    errors[ids.compensationRange[0]] = 'Range details are required when range disclosure is selected.';
+  if (!values.compensationValue) {
+    errors[ids.compensationValue[0]] = 'Compensation value or range is required.';
   }
+
+  return errors;
+}
+
+function validateJobStep3(values) {
+  const ids = FIELD_IDS.job;
+  const errors = {};
 
   if (!values.visaPolicy) {
     errors[ids.visaPolicy[0]] = 'Select visa sponsorship status.';
@@ -49,18 +72,11 @@ function validateJobSubmission(values) {
     errors[ids.relationship[0]] = 'Select your relationship to this role.';
   }
 
-  if (!values.channelFocus) {
-    errors[ids.channelFocus[0]] = 'Select auto-pick or a channel override.';
-  }
-
-  if (!looksLikeUrl(values.jobUrl)) {
-    errors[ids.jobUrl[0]] = 'Job link must start with http:// or https://';
-  }
-
+  validateLinkField(values.links, ids.links[0], errors);
   return errors;
 }
 
-function validateCandidateSubmission(values) {
+function validateCandidateStep1(values) {
   const ids = FIELD_IDS.candidate;
   const errors = {};
 
@@ -69,52 +85,61 @@ function validateCandidateSubmission(values) {
   }
 
   if (!values.locationSummary) {
-    errors[ids.locationSummary[0]] = 'Location details are required.';
+    errors[ids.locationSummary[0]] = 'Location is required.';
   }
 
-  if (!values.workArrangement) {
-    errors[ids.workArrangement[0]] = 'Select a work arrangement.';
+  if (!values.workArrangements.length) {
+    errors[ids.workArrangements[0]] = 'Select at least one work arrangement.';
   }
 
-  if (!values.availabilityStatus) {
-    errors[ids.availabilityStatus[0]] = 'Select current availability status.';
-  }
-
-  if (!values.compensationDisclosure) {
-    errors[ids.compensationDisclosure[0]] = 'Select compensation disclosure status.';
-  }
-
-  if (values.compensationDisclosure === COMP_DISCLOSURE.RANGE && !values.compensationTarget) {
-    errors[ids.compensationTarget[0]] = 'Enter compensation details when range disclosure is selected.';
-  }
-
-  if (!values.visaPolicy) {
-    errors[ids.visaPolicy[0]] = 'Select work authorization / visa context.';
-  }
-
-  if (!values.relationship) {
-    errors[ids.relationship[0]] = 'Select poster relationship.';
-  }
-
-  if (!values.channelFocus) {
-    errors[ids.channelFocus[0]] = 'Select auto-pick or a channel override.';
-  }
-
-  if (values.links) {
-    const invalidLink = values.links
-      .split(',')
-      .map((value) => value.trim())
-      .find((value) => value && !looksLikeUrl(value));
-
-    if (invalidLink) {
-      errors[ids.links[0]] = 'Links must be comma-separated and start with http:// or https://';
-    }
+  if (!values.availabilityModes.length) {
+    errors[ids.availabilityModes[0]] = 'Select at least one availability mode.';
   }
 
   return errors;
 }
 
+function validateCandidateStep2(values) {
+  const ids = FIELD_IDS.candidate;
+  const errors = {};
+
+  if (!values.engagementTypes.length) {
+    errors[ids.engagementTypes[0]] = 'Select at least one engagement type.';
+  }
+
+  if (!values.compensationDisclosure) {
+    errors[ids.compensationDisclosure[0]] = 'Select compensation visibility.';
+  }
+
+  if (!values.compensationValue) {
+    errors[ids.compensationValue[0]] = 'Compensation value or range is required.';
+  }
+
+  return errors;
+}
+
+function validateCandidateStep3(values) {
+  const ids = FIELD_IDS.candidate;
+  const errors = {};
+
+  if (!values.visaPolicy) {
+    errors[ids.visaPolicy[0]] = 'Select work authorization or visa status.';
+  }
+
+  if (!values.relationship) {
+    errors[ids.relationship[0]] = 'Select relationship.';
+  }
+
+  validateLinkField(values.links, ids.links[0], errors);
+  return errors;
+}
+
 module.exports = {
-  validateCandidateSubmission,
-  validateJobSubmission,
+  splitLinks,
+  validateCandidateStep1,
+  validateCandidateStep2,
+  validateCandidateStep3,
+  validateJobStep1,
+  validateJobStep2,
+  validateJobStep3,
 };

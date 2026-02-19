@@ -1,0 +1,138 @@
+{
+  "type": "modal",
+  "callback_id": "job_posting_guided_step_1",
+  "private_metadata": "{\"kind\":\"job_posting\",\"flow\":\"guided\",\"step\":1,\"data\":{}}",
+  "title": {
+    "type": "plain_text",
+    "text": "Share Opportunity (1/3)",
+    "emoji": true
+  },
+  "submit": {
+    "type": "plain_text",
+    "text": "Next",
+    "emoji": true
+  },
+  "close": {
+    "type": "plain_text",
+    "text": "Cancel",
+    "emoji": true
+  },
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "plain_text",
+        "text": "Great start. Add the essentials and we will shape a clean opportunity card.",
+        "emoji": true
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Step 1: Basics",
+        "emoji": true
+      }
+    },
+    {
+      "type": "input",
+      "block_id": "job_company_name_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Company",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_company_name_input",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Example: Calendly or Stealth",
+          "emoji": true
+        }
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_role_title_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Role",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_role_title_input",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Example: Senior Backend Engineer",
+          "emoji": true
+        }
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_location_summary_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Location",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_location_summary_input",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "City, region, or remote constraints",
+          "emoji": true
+        }
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_work_arrangements_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Work arrangements",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "job_work_arrangements_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Remote",
+              "emoji": true
+            },
+            "value": "remote"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Hybrid",
+              "emoji": true
+            },
+            "value": "hybrid"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "On-site",
+              "emoji": true
+            },
+            "value": "onsite"
+          }
+        ]
+      },
+      "optional": false
+    }
+  ]
+}

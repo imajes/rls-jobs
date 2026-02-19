@@ -1,52 +1,82 @@
 const { FIELD_IDS } = require('./field-ids');
-const { getCheckboxValues, getInputValue, getStaticSelectValue } = require('./view-state');
+const { getCheckboxValues, getInputValue, getRadioValue } = require('./view-state');
 
-function parseJobSubmission(viewStateValues) {
+function parseJobStep1(viewStateValues) {
   const ids = FIELD_IDS.job;
-  const stealthFlags = getCheckboxValues(viewStateValues, ids.stealthCompany[0], ids.stealthCompany[1]);
-  const threadFlags = getCheckboxValues(viewStateValues, ids.allowThreadQuestions[0], ids.allowThreadQuestions[1]);
 
   return {
     companyName: getInputValue(viewStateValues, ids.companyName[0], ids.companyName[1]),
-    stealthCompany: stealthFlags.includes('stealth_enabled'),
     roleTitle: getInputValue(viewStateValues, ids.roleTitle[0], ids.roleTitle[1]),
-    employmentType: getStaticSelectValue(viewStateValues, ids.employmentType[0], ids.employmentType[1]),
     locationSummary: getInputValue(viewStateValues, ids.locationSummary[0], ids.locationSummary[1]),
-    workArrangement: getStaticSelectValue(viewStateValues, ids.workArrangement[0], ids.workArrangement[1]),
-    compensationDisclosure: getStaticSelectValue(
+    workArrangements: getCheckboxValues(viewStateValues, ids.workArrangements[0], ids.workArrangements[1]),
+  };
+}
+
+function parseJobStep2(viewStateValues) {
+  const ids = FIELD_IDS.job;
+
+  return {
+    employmentTypes: getCheckboxValues(viewStateValues, ids.employmentTypes[0], ids.employmentTypes[1]),
+    compensationValue: getInputValue(viewStateValues, ids.compensationValue[0], ids.compensationValue[1]),
+    compensationComponents: getCheckboxValues(
       viewStateValues,
-      ids.compensationDisclosure[0],
-      ids.compensationDisclosure[1],
+      ids.compensationComponents[0],
+      ids.compensationComponents[1],
     ),
-    compensationRange: getInputValue(viewStateValues, ids.compensationRange[0], ids.compensationRange[1]),
-    visaPolicy: getStaticSelectValue(viewStateValues, ids.visaPolicy[0], ids.visaPolicy[1]),
-    relationship: getStaticSelectValue(viewStateValues, ids.relationship[0], ids.relationship[1]),
-    channelFocus: getStaticSelectValue(viewStateValues, ids.channelFocus[0], ids.channelFocus[1]),
-    jobUrl: getInputValue(viewStateValues, ids.jobUrl[0], ids.jobUrl[1]),
+  };
+}
+
+function parseJobStep3(viewStateValues) {
+  const ids = FIELD_IDS.job;
+  const threadFlags = getCheckboxValues(viewStateValues, ids.allowThreadQuestions[0], ids.allowThreadQuestions[1]);
+
+  return {
+    visaPolicy: getRadioValue(viewStateValues, ids.visaPolicy[0], ids.visaPolicy[1]),
+    relationship: getRadioValue(viewStateValues, ids.relationship[0], ids.relationship[1]),
+    links: getInputValue(viewStateValues, ids.links[0], ids.links[1]),
     skills: getInputValue(viewStateValues, ids.skills[0], ids.skills[1]),
-    description: getInputValue(viewStateValues, ids.description[0], ids.description[1]),
+    summary: getInputValue(viewStateValues, ids.summary[0], ids.summary[1]),
     allowThreadQuestions: threadFlags.includes('allow_thread_questions'),
   };
 }
 
-function parseCandidateSubmission(viewStateValues) {
+function parseCandidateStep1(viewStateValues) {
   const ids = FIELD_IDS.candidate;
-  const threadFlags = getCheckboxValues(viewStateValues, ids.allowThreadQuestions[0], ids.allowThreadQuestions[1]);
 
   return {
     headline: getInputValue(viewStateValues, ids.headline[0], ids.headline[1]),
     locationSummary: getInputValue(viewStateValues, ids.locationSummary[0], ids.locationSummary[1]),
-    workArrangement: getStaticSelectValue(viewStateValues, ids.workArrangement[0], ids.workArrangement[1]),
-    compensationDisclosure: getStaticSelectValue(
+    workArrangements: getCheckboxValues(viewStateValues, ids.workArrangements[0], ids.workArrangements[1]),
+    availabilityModes: getCheckboxValues(viewStateValues, ids.availabilityModes[0], ids.availabilityModes[1]),
+  };
+}
+
+function parseCandidateStep2(viewStateValues) {
+  const ids = FIELD_IDS.candidate;
+
+  return {
+    engagementTypes: getCheckboxValues(viewStateValues, ids.engagementTypes[0], ids.engagementTypes[1]),
+    compensationDisclosure: getRadioValue(
       viewStateValues,
       ids.compensationDisclosure[0],
       ids.compensationDisclosure[1],
     ),
-    compensationTarget: getInputValue(viewStateValues, ids.compensationTarget[0], ids.compensationTarget[1]),
-    visaPolicy: getStaticSelectValue(viewStateValues, ids.visaPolicy[0], ids.visaPolicy[1]),
-    relationship: getStaticSelectValue(viewStateValues, ids.relationship[0], ids.relationship[1]),
-    availabilityStatus: getStaticSelectValue(viewStateValues, ids.availabilityStatus[0], ids.availabilityStatus[1]),
-    channelFocus: getStaticSelectValue(viewStateValues, ids.channelFocus[0], ids.channelFocus[1]),
+    compensationValue: getInputValue(viewStateValues, ids.compensationValue[0], ids.compensationValue[1]),
+    compensationComponents: getCheckboxValues(
+      viewStateValues,
+      ids.compensationComponents[0],
+      ids.compensationComponents[1],
+    ),
+  };
+}
+
+function parseCandidateStep3(viewStateValues) {
+  const ids = FIELD_IDS.candidate;
+  const threadFlags = getCheckboxValues(viewStateValues, ids.allowThreadQuestions[0], ids.allowThreadQuestions[1]);
+
+  return {
+    visaPolicy: getRadioValue(viewStateValues, ids.visaPolicy[0], ids.visaPolicy[1]),
+    relationship: getRadioValue(viewStateValues, ids.relationship[0], ids.relationship[1]),
     links: getInputValue(viewStateValues, ids.links[0], ids.links[1]),
     skills: getInputValue(viewStateValues, ids.skills[0], ids.skills[1]),
     notes: getInputValue(viewStateValues, ids.notes[0], ids.notes[1]),
@@ -55,6 +85,10 @@ function parseCandidateSubmission(viewStateValues) {
 }
 
 module.exports = {
-  parseCandidateSubmission,
-  parseJobSubmission,
+  parseCandidateStep1,
+  parseCandidateStep2,
+  parseCandidateStep3,
+  parseJobStep1,
+  parseJobStep2,
+  parseJobStep3,
 };

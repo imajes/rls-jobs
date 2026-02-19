@@ -8,18 +8,22 @@ const CHANNEL_LABELS = {
   [CHANNEL_FOCUS.CONSULTING]: '#jobs-consulting',
 };
 
+function hasAny(values, expected) {
+  return values.some((value) => expected.includes(value));
+}
+
 function textHasAny(text, keywords) {
   const lowered = (text || '').toLowerCase();
   return keywords.some((keyword) => lowered.includes(keyword));
 }
 
 function inferFromText(values) {
-  const combined = [values.roleTitle, values.description, values.headline, values.skills, values.notes]
+  const combined = [values.roleTitle, values.summary, values.headline, values.skills, values.notes]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
 
-  if (textHasAny(combined, ['cofounder', 'founding engineer', 'founding'])) {
+  if (textHasAny(combined, ['cofounder', 'founding'])) {
     return CHANNEL_FOCUS.COFOUNDER;
   }
 
@@ -31,51 +35,52 @@ function inferFromText(values) {
 }
 
 function recommendChannel(kind, values) {
-  if (values.channelFocus && values.channelFocus !== CHANNEL_FOCUS.AUTO) {
-    return {
-      key: values.channelFocus,
-      reason: 'poster_override',
-    };
-  }
-
   if (kind === POST_KIND.JOB) {
-    if (values.employmentType === EMPLOYMENT_TYPE.COFOUNDER) {
+    if (hasAny(values.employmentTypes || [], [EMPLOYMENT_TYPE.COFOUNDER])) {
       return { key: CHANNEL_FOCUS.COFOUNDER, reason: 'employment_type_cofounder' };
     }
 
-    if ([EMPLOYMENT_TYPE.CONSULTING, EMPLOYMENT_TYPE.CONTRACT].includes(values.employmentType)) {
-      return { key: CHANNEL_FOCUS.CONSULTING, reason: 'employment_type_consulting_or_contract' };
+    if (hasAny(values.employmentTypes || [], [EMPLOYMENT_TYPE.CONSULTING, EMPLOYMENT_TYPE.CONTRACT])) {
+      return { key: CHANNEL_FOCUS.CONSULTING, reason: 'employment_type_contract_or_consulting' };
     }
 
-    if (values.workArrangement === WORK_ARRANGEMENT.REMOTE) {
-      return { key: CHANNEL_FOCUS.REMOTE, reason: 'remote_work_arrangement' };
+    const workArrangements = values.workArrangements || [];
+    const hasRemote = hasAny(workArrangements, [WORK_ARRANGEMENT.REMOTE]);
+    const hasOnsite = hasAny(workArrangements, [WORK_ARRANGEMENT.ONSITE, WORK_ARRANGEMENT.HYBRID]);
+
+    if (hasRemote && !hasOnsite) {
+      return { key: CHANNEL_FOCUS.REMOTE, reason: 'remote_only' };
     }
 
-    if ([WORK_ARRANGEMENT.ONSITE, WORK_ARRANGEMENT.HYBRID].includes(values.workArrangement)) {
-      return { key: CHANNEL_FOCUS.ONSITE, reason: 'onsite_or_hybrid_work_arrangement' };
+    if (hasOnsite && !hasRemote) {
+      return { key: CHANNEL_FOCUS.ONSITE, reason: 'onsite_or_hybrid_only' };
     }
 
-    return { key: inferFromText(values), reason: 'keyword_fallback' };
+    return { key: inferFromText(values), reason: 'keyword_or_mixed_fallback' };
   }
 
   if (kind === POST_KIND.CANDIDATE) {
-    if (values.availabilityStatus === CANDIDATE_AVAILABILITY.COFOUNDER_ONLY) {
+    if (hasAny(values.availabilityModes || [], [CANDIDATE_AVAILABILITY.COFOUNDER_ONLY])) {
       return { key: CHANNEL_FOCUS.COFOUNDER, reason: 'candidate_cofounder_only' };
     }
 
-    if (values.availabilityStatus === CANDIDATE_AVAILABILITY.CONTRACT_ONLY) {
+    if (hasAny(values.availabilityModes || [], [CANDIDATE_AVAILABILITY.CONTRACT_ONLY])) {
       return { key: CHANNEL_FOCUS.CONSULTING, reason: 'candidate_contract_only' };
     }
 
-    if (values.workArrangement === WORK_ARRANGEMENT.REMOTE) {
-      return { key: CHANNEL_FOCUS.REMOTE, reason: 'candidate_remote_preference' };
+    const workArrangements = values.workArrangements || [];
+    const hasRemote = hasAny(workArrangements, [WORK_ARRANGEMENT.REMOTE]);
+    const hasOnsite = hasAny(workArrangements, [WORK_ARRANGEMENT.ONSITE, WORK_ARRANGEMENT.HYBRID]);
+
+    if (hasRemote && !hasOnsite) {
+      return { key: CHANNEL_FOCUS.REMOTE, reason: 'candidate_remote_only' };
     }
 
-    if ([WORK_ARRANGEMENT.ONSITE, WORK_ARRANGEMENT.HYBRID].includes(values.workArrangement)) {
-      return { key: CHANNEL_FOCUS.ONSITE, reason: 'candidate_onsite_or_hybrid_preference' };
+    if (hasOnsite && !hasRemote) {
+      return { key: CHANNEL_FOCUS.ONSITE, reason: 'candidate_onsite_or_hybrid_only' };
     }
 
-    return { key: inferFromText(values), reason: 'keyword_fallback' };
+    return { key: inferFromText(values), reason: 'keyword_or_mixed_fallback' };
   }
 
   return { key: CHANNEL_FOCUS.JOBS, reason: 'default' };

@@ -1,0 +1,143 @@
+{
+  "type": "modal",
+  "callback_id": "candidate_full_details_modal",
+  "title": {
+    "type": "plain_text",
+    "text": "Candidate Details",
+    "emoji": true
+  },
+  "close": {
+    "type": "plain_text",
+    "text": "Close",
+    "emoji": true
+  },
+  "blocks": [
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_section",
+          "elements": [
+            {
+              "type": "text",
+              "text": "Staff Product Engineer / Engineering Manager",
+              "style": {
+                "bold": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "📍 Seattle, WA, open to US remote roles",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "💼 Full-time, Contract",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "🕒 Open to opportunities",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "💸 $210k+ base + Equity + Bonus",
+          "emoji": true
+        }
+      ]
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_list",
+          "style": "bullet",
+          "elements": [
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "Work arrangements: Remote, Hybrid"
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "Work authorization: Prefer not to say"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_quote",
+          "elements": [
+            {
+              "type": "text",
+              "text": "Open to senior IC and EM roles at mission-driven companies."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Links*"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<https://linkedin.com/in/example|https://linkedin.com/in/example>"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<https://github.com/example|https://github.com/example>"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "action_id": "candidate_details_save",
+          "text": {
+            "type": "plain_text",
+            "text": "Save to My List",
+            "emoji": true
+          },
+          "value": "candidate_preview_001"
+        }
+      ]
+    }
+  ]
+}

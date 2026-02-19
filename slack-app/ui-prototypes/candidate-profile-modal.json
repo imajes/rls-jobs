@@ -4,12 +4,12 @@
   "private_metadata": "{\"post_kind\":\"candidate_profile\"}",
   "title": {
     "type": "plain_text",
-    "text": "Post Candidate",
+    "text": "Share Candidate Profile",
     "emoji": true
   },
   "submit": {
     "type": "plain_text",
-    "text": "Create Preview",
+    "text": "Review Card",
     "emoji": true
   },
   "close": {
@@ -21,8 +21,20 @@
     {
       "type": "section",
       "text": {
-        "type": "mrkdwn",
-        "text": "*Structured candidate post*\nKeeps high-signal details without forcing long bios."
+        "type": "plain_text",
+        "text": "A strong profile card helps the right people find this candidate quickly.",
+        "emoji": true
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Basics",
+        "emoji": true
       }
     },
     {
@@ -39,7 +51,7 @@
         "multiline": false,
         "placeholder": {
           "type": "plain_text",
-          "text": "Example: Staff Product Engineer, AI infra",
+          "text": "Example: Staff Engineer, Product Engineer, EM",
           "emoji": true
         }
       },
@@ -59,36 +71,98 @@
         "multiline": false,
         "placeholder": {
           "type": "plain_text",
-          "text": "Current location and location constraints",
+          "text": "City, region, timezone, relocation constraints",
           "emoji": true
         }
       },
       "optional": false
     },
     {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Role Details",
+        "emoji": true
+      }
+    },
+    {
       "type": "input",
-      "block_id": "candidate_work_arrangement_block",
+      "block_id": "candidate_engagement_types_block",
       "label": {
         "type": "plain_text",
-        "text": "Work arrangement preference",
+        "text": "Engagement types",
         "emoji": true
       },
       "element": {
-        "type": "static_select",
-        "action_id": "candidate_work_arrangement_select",
-        "placeholder": {
-          "type": "plain_text",
-          "text": "Select preference",
-          "emoji": true
-        },
+        "type": "checkboxes",
+        "action_id": "candidate_engagement_types_checkbox",
         "options": [
           {
             "text": {
               "type": "plain_text",
-              "text": "On-site",
+              "text": "Full-time",
               "emoji": true
             },
-            "value": "onsite"
+            "value": "full_time"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Part-time",
+              "emoji": true
+            },
+            "value": "part_time"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Contract",
+              "emoji": true
+            },
+            "value": "contract"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Consulting",
+              "emoji": true
+            },
+            "value": "consulting"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Cofounder",
+              "emoji": true
+            },
+            "value": "cofounder"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_work_arrangements_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Work arrangements",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "candidate_work_arrangements_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Remote",
+              "emoji": true
+            },
+            "value": "remote"
           },
           {
             "text": {
@@ -101,15 +175,15 @@
           {
             "text": {
               "type": "plain_text",
-              "text": "Remote",
+              "text": "On-site",
               "emoji": true
             },
-            "value": "remote"
+            "value": "onsite"
           },
           {
             "text": {
               "type": "plain_text",
-              "text": "Flexible / mixed",
+              "text": "Flexible or mixed",
               "emoji": true
             },
             "value": "flexible"
@@ -120,20 +194,15 @@
     },
     {
       "type": "input",
-      "block_id": "candidate_availability_block",
+      "block_id": "candidate_availability_modes_block",
       "label": {
         "type": "plain_text",
-        "text": "Availability status",
+        "text": "Availability",
         "emoji": true
       },
       "element": {
-        "type": "static_select",
-        "action_id": "candidate_availability_select",
-        "placeholder": {
-          "type": "plain_text",
-          "text": "Select availability",
-          "emoji": true
-        },
+        "type": "checkboxes",
+        "action_id": "candidate_availability_modes_checkbox",
         "options": [
           {
             "text": {
@@ -154,7 +223,7 @@
           {
             "text": {
               "type": "plain_text",
-              "text": "Contract / consulting only",
+              "text": "Contract or consulting only",
               "emoji": true
             },
             "value": "contract_only"
@@ -172,21 +241,27 @@
       "optional": false
     },
     {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Compensation",
+        "emoji": true
+      }
+    },
+    {
       "type": "input",
-      "block_id": "candidate_comp_disclosure_block",
+      "block_id": "candidate_compensation_disclosure_block",
       "label": {
         "type": "plain_text",
-        "text": "Compensation disclosure",
+        "text": "Disclosure",
         "emoji": true
       },
       "element": {
-        "type": "static_select",
-        "action_id": "candidate_comp_disclosure_select",
-        "placeholder": {
-          "type": "plain_text",
-          "text": "Select compensation status",
-          "emoji": true
-        },
+        "type": "radio_buttons",
+        "action_id": "candidate_compensation_disclosure_radio",
         "options": [
           {
             "text": {
@@ -199,7 +274,7 @@
           {
             "text": {
               "type": "plain_text",
-              "text": "Negotiable / depends",
+              "text": "Negotiable or TBD",
               "emoji": true
             },
             "value": "negotiable"
@@ -215,7 +290,7 @@
           {
             "text": {
               "type": "plain_text",
-              "text": "Commission / variable",
+              "text": "Commission or variable",
               "emoji": true
             },
             "value": "performance_based"
@@ -226,56 +301,102 @@
     },
     {
       "type": "input",
-      "block_id": "candidate_comp_target_block",
+      "block_id": "candidate_compensation_value_block",
       "label": {
         "type": "plain_text",
-        "text": "Compensation target",
+        "text": "Pay number or range",
         "emoji": true
       },
       "element": {
         "type": "plain_text_input",
-        "action_id": "candidate_comp_target_input",
+        "action_id": "candidate_compensation_value_input",
         "multiline": false,
         "placeholder": {
           "type": "plain_text",
-          "text": "Example: $190k+ base or $120/hr",
+          "text": "Examples: $180-$220k USD, 1-4%, or Negotiable",
           "emoji": true
         }
       },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_compensation_components_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Components",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "candidate_compensation_components_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Equity",
+              "emoji": true
+            },
+            "value": "equity"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Bonus",
+              "emoji": true
+            },
+            "value": "bonus"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Commission",
+              "emoji": true
+            },
+            "value": "commission"
+          }
+        ]
+      },
       "optional": true
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Additional Context",
+        "emoji": true
+      }
     },
     {
       "type": "input",
       "block_id": "candidate_visa_policy_block",
       "label": {
         "type": "plain_text",
-        "text": "Work authorization / visa",
+        "text": "Work authorization or visa",
         "emoji": true
       },
       "element": {
-        "type": "static_select",
-        "action_id": "candidate_visa_policy_select",
-        "placeholder": {
-          "type": "plain_text",
-          "text": "Select visa context",
-          "emoji": true
-        },
+        "type": "radio_buttons",
+        "action_id": "candidate_visa_policy_radio",
         "options": [
           {
             "text": {
               "type": "plain_text",
-              "text": "Can sponsor visa",
+              "text": "Authorized, no sponsorship needed",
               "emoji": true
             },
-            "value": "yes"
+            "value": "no"
           },
           {
             "text": {
               "type": "plain_text",
-              "text": "Cannot sponsor visa",
+              "text": "Will require sponsorship",
               "emoji": true
             },
-            "value": "no"
+            "value": "yes"
           },
           {
             "text": {
@@ -288,7 +409,7 @@
           {
             "text": {
               "type": "plain_text",
-              "text": "Unknown / not sure",
+              "text": "Prefer not to say",
               "emoji": true
             },
             "value": "unknown"
@@ -302,17 +423,12 @@
       "block_id": "candidate_relationship_block",
       "label": {
         "type": "plain_text",
-        "text": "Poster relationship",
+        "text": "Relationship",
         "emoji": true
       },
       "element": {
-        "type": "static_select",
-        "action_id": "candidate_relationship_select",
-        "placeholder": {
-          "type": "plain_text",
-          "text": "Select relationship",
-          "emoji": true
-        },
+        "type": "radio_buttons",
+        "action_id": "candidate_relationship_radio",
         "options": [
           {
             "text": {
@@ -325,7 +441,7 @@
           {
             "text": {
               "type": "plain_text",
-              "text": "Recruiter posting candidate",
+              "text": "Recruiter or sourcer",
               "emoji": true
             },
             "value": "recruiter"
@@ -344,87 +460,6 @@
     },
     {
       "type": "input",
-      "block_id": "candidate_channel_focus_block",
-      "label": {
-        "type": "plain_text",
-        "text": "Channel focus",
-        "emoji": true
-      },
-      "element": {
-        "type": "static_select",
-        "action_id": "candidate_channel_focus_select",
-        "placeholder": {
-          "type": "plain_text",
-          "text": "Auto-pick or override",
-          "emoji": true
-        },
-        "options": [
-          {
-            "text": {
-              "type": "plain_text",
-              "text": "Auto-pick best channel",
-              "emoji": true
-            },
-            "value": "auto"
-          },
-          {
-            "text": {
-              "type": "plain_text",
-              "text": "#jobs (general)",
-              "emoji": true
-            },
-            "value": "jobs"
-          },
-          {
-            "text": {
-              "type": "plain_text",
-              "text": "#onsite-jobs",
-              "emoji": true
-            },
-            "value": "onsite_jobs"
-          },
-          {
-            "text": {
-              "type": "plain_text",
-              "text": "#remote-jobs",
-              "emoji": true
-            },
-            "value": "remote_jobs"
-          },
-          {
-            "text": {
-              "type": "plain_text",
-              "text": "#jobs-cofounders",
-              "emoji": true
-            },
-            "value": "jobs_cofounders"
-          },
-          {
-            "text": {
-              "type": "plain_text",
-              "text": "#jobs-consulting",
-              "emoji": true
-            },
-            "value": "jobs_consulting"
-          }
-        ],
-        "initial_option": {
-          "text": {
-            "type": "plain_text",
-            "text": "Auto-pick best channel",
-            "emoji": true
-          },
-          "value": "auto"
-        }
-      },
-      "optional": false,
-      "hint": {
-        "type": "mrkdwn",
-        "text": "Auto-pick helps route remote, consulting, or cofounder-focused availability."
-      }
-    },
-    {
-      "type": "input",
       "block_id": "candidate_links_block",
       "label": {
         "type": "plain_text",
@@ -434,10 +469,10 @@
       "element": {
         "type": "plain_text_input",
         "action_id": "candidate_links_input",
-        "multiline": false,
+        "multiline": true,
         "placeholder": {
           "type": "plain_text",
-          "text": "Portfolio, resume, LinkedIn, GitHub (comma-separated)",
+          "text": "Portfolio, resume, LinkedIn, GitHub. One per line.",
           "emoji": true
         }
       },
@@ -457,7 +492,7 @@
         "multiline": false,
         "placeholder": {
           "type": "plain_text",
-          "text": "Comma-separated: React, Rails, Product design",
+          "text": "Comma-separated",
           "emoji": true
         }
       },
@@ -477,19 +512,29 @@
         "multiline": true,
         "placeholder": {
           "type": "plain_text",
-          "text": "Relevant context for recruiters and hiring managers",
+          "text": "Anything helpful for matching",
           "emoji": true
         }
       },
       "optional": true
     },
     {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Conversation",
+        "emoji": true
+      }
+    },
+    {
       "type": "input",
       "block_id": "candidate_thread_questions_block",
-      "optional": true,
       "label": {
         "type": "plain_text",
-        "text": "Thread behavior",
+        "text": "Thread settings",
         "emoji": true
       },
       "element": {
@@ -505,7 +550,8 @@
             "value": "allow_thread_questions"
           }
         ]
-      }
+      },
+      "optional": true
     }
   ]
 }

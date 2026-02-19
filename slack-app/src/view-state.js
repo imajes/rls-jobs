@@ -17,6 +17,11 @@ function getStaticSelectValue(viewStateValues, blockId, actionId) {
   return action?.selected_option?.value || '';
 }
 
+function getRadioValue(viewStateValues, blockId, actionId) {
+  const action = getBlockAction(viewStateValues, blockId, actionId);
+  return action?.selected_option?.value || '';
+}
+
 function getCheckboxValues(viewStateValues, blockId, actionId) {
   const action = getBlockAction(viewStateValues, blockId, actionId);
   return action?.selected_options?.map((opt) => opt.value) || [];
@@ -25,5 +30,6 @@ function getCheckboxValues(viewStateValues, blockId, actionId) {
 module.exports = {
   getCheckboxValues,
   getInputValue,
+  getRadioValue,
   getStaticSelectValue,
 };

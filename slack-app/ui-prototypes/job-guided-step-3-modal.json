@@ -1,0 +1,228 @@
+{
+  "type": "modal",
+  "callback_id": "job_posting_guided_step_3",
+  "private_metadata": "{\"kind\":\"job_posting\",\"flow\":\"guided\",\"step\":3,\"data\":{\"companyName\":\"Steady Orbit Labs\",\"roleTitle\":\"Senior Platform Engineer\",\"locationSummary\":\"Hybrid in NYC (2 days onsite)\",\"workArrangements\":[\"hybrid\",\"onsite\"],\"employmentTypes\":[\"full_time\",\"contract\"],\"compensationValue\":\"$185k-$230k USD\",\"compensationComponents\":[\"equity\",\"bonus\"],\"visaPolicy\":\"case_by_case\",\"relationship\":\"hiring_manager\",\"links\":\"https://example.com/jobs/senior-platform-engineer\\nhttps://steadyorbitlabs.com/careers/platform-engineering\",\"skills\":\"Ruby, Postgres, AWS, Terraform\",\"summary\":\"Build and scale data-heavy systems, improve reliability posture, and partner closely with product engineering teams.\",\"allowThreadQuestions\":true}}",
+  "title": {
+    "type": "plain_text",
+    "text": "Share Opportunity (3/3)",
+    "emoji": true
+  },
+  "submit": {
+    "type": "plain_text",
+    "text": "Review Card",
+    "emoji": true
+  },
+  "close": {
+    "type": "plain_text",
+    "text": "Cancel",
+    "emoji": true
+  },
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "plain_text",
+        "text": "Final step. Add context and links, then review your polished card.",
+        "emoji": true
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Step 3: Context and Links",
+        "emoji": true
+      }
+    },
+    {
+      "type": "input",
+      "block_id": "job_visa_policy_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Visa sponsorship",
+        "emoji": true
+      },
+      "element": {
+        "type": "radio_buttons",
+        "action_id": "job_visa_policy_radio",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Can sponsor visa",
+              "emoji": true
+            },
+            "value": "yes"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Cannot sponsor visa",
+              "emoji": true
+            },
+            "value": "no"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Case-by-case",
+              "emoji": true
+            },
+            "value": "case_by_case"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Unknown",
+              "emoji": true
+            },
+            "value": "unknown"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_relationship_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Relationship to this role",
+        "emoji": true
+      },
+      "element": {
+        "type": "radio_buttons",
+        "action_id": "job_relationship_radio",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Hiring manager",
+              "emoji": true
+            },
+            "value": "hiring_manager"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Team member",
+              "emoji": true
+            },
+            "value": "team_member"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Recruiter",
+              "emoji": true
+            },
+            "value": "recruiter"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Can refer or introduce",
+              "emoji": true
+            },
+            "value": "referral"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Other",
+              "emoji": true
+            },
+            "value": "other"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "job_links_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Links",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_links_input",
+        "multiline": true,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "One URL per line or comma-separated",
+          "emoji": true
+        }
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "job_skills_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Skills",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_skills_input",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Comma-separated",
+          "emoji": true
+        }
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "job_summary_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Summary",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "job_summary_input",
+        "multiline": true,
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Two to five concise lines",
+          "emoji": true
+        }
+      },
+      "optional": true
+    },
+    {
+      "type": "input",
+      "block_id": "job_thread_questions_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Thread settings",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "job_thread_questions_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Open to thread questions on this post",
+              "emoji": true
+            },
+            "value": "allow_thread_questions"
+          }
+        ]
+      },
+      "optional": true
+    }
+  ]
+}

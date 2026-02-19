@@ -10,30 +10,30 @@ Step One was implemented in the Slack app only, but it establishes required inpu
 
 Common:
 
-- `channel_focus` (auto or explicit override)
+- channel routing recommendation output (captured post-intake from preview action context)
 - `allow_thread_questions`
 - `relationship`
 - `visa_policy`
-- `compensation_disclosure`
+- `compensation_value`
+- `compensation_components`
 
 Job-specific:
 
-- `stealth_company`
 - `company_name`
 - `role_title`
-- `employment_type`
+- `employment_types` (multi-value)
 - `location_summary`
-- `work_arrangement`
-- `compensation_range`
-- `job_url`
+- `work_arrangements` (multi-value)
 - `skills`
-- `description`
+- `summary`
+- `links` (multi-link)
 
 Candidate-specific:
 
 - `headline`
-- `availability_status`
-- `compensation_target`
+- `availability_modes` (multi-value)
+- `engagement_types` (multi-value)
+- `compensation_disclosure`
 - `links`
 - `skills`
 - `notes`

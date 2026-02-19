@@ -1,161 +1,279 @@
 const { CHANNEL_LABELS } = require('./channel-routing');
+const { labels } = require('./constants');
+const { splitLinks } = require('./validation');
 
-function joinIfPresent(label, value) {
-  if (!value) {
-    return null;
-  }
-
-  return `*${label}:* ${value}`;
+function toLabelList(values, labelMap) {
+  return (values || []).map((value) => labelMap[value] || value);
 }
 
-function jobPreviewMessage(userId, values, recommendation, routedChannelId) {
-  const companyName = values.stealthCompany ? 'Stealth' : values.companyName;
-  const routingLabel = CHANNEL_LABELS[recommendation.key] || '#jobs';
+function humanComp(values) {
+  const base = values.compensationValue || 'Compensation not listed';
+  const components = values.compensationComponents || [];
+  if (!components.length) {
+    return base;
+  }
 
-  const lines = [
-    joinIfPresent('Company', companyName),
-    joinIfPresent('Role', values.roleTitle),
-    joinIfPresent('Employment type', values.employmentType),
-    joinIfPresent('Location', values.locationSummary),
-    joinIfPresent('Work arrangement', values.workArrangement),
-    joinIfPresent('Compensation', values.compensationRange || values.compensationDisclosure),
-    joinIfPresent('Visa', values.visaPolicy),
-    joinIfPresent('Relationship', values.relationship),
-    joinIfPresent('Skills', values.skills),
-    joinIfPresent('Link', values.jobUrl),
-  ].filter(Boolean);
+  return `${base} + ${components.map((component) => component.charAt(0).toUpperCase() + component.slice(1)).join(' + ')}`;
+}
 
-  const blocks = [
+function jobHeadline(values) {
+  return `${values.roleTitle || 'Role'} at ${values.companyName || 'Company'}, ${values.locationSummary || 'Location TBD'}`;
+}
+
+function candidateHeadline(values) {
+  return `${values.headline || 'Candidate'}, ${values.locationSummary || 'Location TBD'}`;
+}
+
+function firstLink(values) {
+  return splitLinks(values.links)[0] || '';
+}
+
+function routeOptions(previewId) {
+  return Object.entries(CHANNEL_LABELS).map(([key, label]) => ({
+    text: {
+      type: 'plain_text',
+      text: `Send to ${label}`,
+      emoji: true,
+    },
+    value: `${previewId}|${key}`,
+  }));
+}
+
+function jobPreviewMessage(userId, values, recommendation, routedChannelId, previewId) {
+  const employment = toLabelList(values.employmentTypes, labels.employmentType).join(', ') || 'Not specified';
+  const visa = labels.visa[values.visaPolicy] || 'Not specified';
+  const summary = values.summary || 'No summary provided.';
+  const applyLink = firstLink(values);
+
+  const actions = [
     {
-      type: 'header',
+      type: 'button',
+      action_id: 'job_card_open_details_modal',
       text: {
         type: 'plain_text',
-        text: 'Job Post Preview',
+        text: 'Open Details',
         emoji: true,
       },
+      style: 'primary',
+      value: previewId,
     },
     {
-      type: 'section',
+      type: 'button',
+      action_id: 'job_card_quick_apply',
       text: {
-        type: 'mrkdwn',
-        text: lines.join('\n'),
+        type: 'plain_text',
+        text: 'Quick Apply',
+        emoji: true,
       },
+      value: previewId,
     },
     {
-      type: 'context',
-      elements: [
-        {
-          type: 'mrkdwn',
-          text: `Recommended channel: *${routingLabel}* (${recommendation.reason})`,
-        },
-        {
-          type: 'mrkdwn',
-          text: routedChannelId
-            ? `Channel ID configured: \`${routedChannelId}\``
-            : 'No channel ID configured yet for this focus in `.env`.',
-        },
-      ],
+      type: 'button',
+      action_id: 'job_card_save',
+      text: {
+        type: 'plain_text',
+        text: 'Save',
+        emoji: true,
+      },
+      value: previewId,
+    },
+    {
+      type: 'overflow',
+      action_id: 'job_card_route_channel',
+      options: routeOptions(previewId),
     },
   ];
 
-  if (values.description) {
-    blocks.push({
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: `*Summary*\n${values.description}`,
-      },
-    });
+  if (!applyLink) {
+    actions.splice(1, 1);
   }
-
-  blocks.push({
-    type: 'context',
-    elements: [
-      {
-        type: 'mrkdwn',
-        text: 'Step One preview only. Channel posting and API ingestion are wired in Step Two.',
-      },
-    ],
-  });
 
   return {
     channel: userId,
-    text: `Job preview routed to ${routingLabel}`,
-    blocks,
+    text: jobHeadline(values),
+    blocks: [
+      {
+        type: 'rich_text',
+        elements: [
+          {
+            type: 'rich_text_section',
+            elements: [
+              {
+                type: 'text',
+                text: values.roleTitle || 'Role',
+                style: {
+                  bold: true,
+                },
+              },
+              {
+                type: 'text',
+                text: ` at ${values.companyName || 'Company'}, ${values.locationSummary || 'Location TBD'}`,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'plain_text',
+            text: `💼 ${employment}`,
+            emoji: true,
+          },
+          {
+            type: 'plain_text',
+            text: `💸 ${humanComp(values)}`,
+            emoji: true,
+          },
+          {
+            type: 'plain_text',
+            text: `🛂 Visa: ${visa}`,
+            emoji: true,
+          },
+        ],
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'plain_text',
+          text: summary,
+          emoji: true,
+        },
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'plain_text',
+            text: `Suggested destination: ${CHANNEL_LABELS[recommendation.key] || '#jobs'}`,
+            emoji: true,
+          },
+          {
+            type: 'plain_text',
+            text: routedChannelId
+              ? `Configured channel ID: ${routedChannelId}`
+              : 'No configured channel ID found for this route.',
+            emoji: true,
+          },
+        ],
+      },
+      {
+        type: 'actions',
+        elements: actions,
+      },
+    ],
   };
 }
 
-function candidatePreviewMessage(userId, values, recommendation, routedChannelId) {
-  const routingLabel = CHANNEL_LABELS[recommendation.key] || '#jobs';
-  const lines = [
-    joinIfPresent('Target role(s)', values.headline),
-    joinIfPresent('Location', values.locationSummary),
-    joinIfPresent('Work preference', values.workArrangement),
-    joinIfPresent('Availability', values.availabilityStatus),
-    joinIfPresent('Compensation', values.compensationTarget || values.compensationDisclosure),
-    joinIfPresent('Visa/work authorization', values.visaPolicy),
-    joinIfPresent('Relationship', values.relationship),
-    joinIfPresent('Skills', values.skills),
-    joinIfPresent('Links', values.links),
-  ].filter(Boolean);
-
-  const blocks = [
-    {
-      type: 'header',
-      text: {
-        type: 'plain_text',
-        text: 'Candidate Post Preview',
-        emoji: true,
-      },
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: lines.join('\n'),
-      },
-    },
-    {
-      type: 'context',
-      elements: [
-        {
-          type: 'mrkdwn',
-          text: `Recommended channel: *${routingLabel}* (${recommendation.reason})`,
-        },
-        {
-          type: 'mrkdwn',
-          text: routedChannelId
-            ? `Channel ID configured: \`${routedChannelId}\``
-            : 'No channel ID configured yet for this focus in `.env`.',
-        },
-      ],
-    },
-  ];
-
-  if (values.notes) {
-    blocks.push({
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: `*Notes*\n${values.notes}`,
-      },
-    });
-  }
-
-  blocks.push({
-    type: 'context',
-    elements: [
-      {
-        type: 'mrkdwn',
-        text: 'Step One preview only. Channel posting and API ingestion are wired in Step Two.',
-      },
-    ],
-  });
+function candidatePreviewMessage(userId, values, recommendation, routedChannelId, previewId) {
+  const arrangements = toLabelList(values.workArrangements, labels.workArrangement).join(', ') || 'Not specified';
+  const availability =
+    toLabelList(values.availabilityModes, labels.candidateAvailability).join(', ') || 'Not specified';
+  const summary = values.notes || 'No notes provided.';
 
   return {
     channel: userId,
-    text: `Candidate preview routed to ${routingLabel}`,
-    blocks,
+    text: candidateHeadline(values),
+    blocks: [
+      {
+        type: 'rich_text',
+        elements: [
+          {
+            type: 'rich_text_section',
+            elements: [
+              {
+                type: 'text',
+                text: values.headline || 'Candidate profile',
+                style: {
+                  bold: true,
+                },
+              },
+              {
+                type: 'text',
+                text: ` • ${values.locationSummary || 'Location TBD'}`,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'plain_text',
+            text: `📌 Work: ${arrangements}`,
+            emoji: true,
+          },
+          {
+            type: 'plain_text',
+            text: `🕒 Availability: ${availability}`,
+            emoji: true,
+          },
+          {
+            type: 'plain_text',
+            text: `💸 ${humanComp(values)}`,
+            emoji: true,
+          },
+        ],
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'plain_text',
+          text: summary,
+          emoji: true,
+        },
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'plain_text',
+            text: `Suggested destination: ${CHANNEL_LABELS[recommendation.key] || '#jobs'}`,
+            emoji: true,
+          },
+          {
+            type: 'plain_text',
+            text: routedChannelId
+              ? `Configured channel ID: ${routedChannelId}`
+              : 'No configured channel ID found for this route.',
+            emoji: true,
+          },
+        ],
+      },
+      {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            action_id: 'candidate_card_open_details_modal',
+            text: {
+              type: 'plain_text',
+              text: 'Open Details',
+              emoji: true,
+            },
+            style: 'primary',
+            value: previewId,
+          },
+          {
+            type: 'button',
+            action_id: 'candidate_card_save',
+            text: {
+              type: 'plain_text',
+              text: 'Save',
+              emoji: true,
+            },
+            value: previewId,
+          },
+          {
+            type: 'overflow',
+            action_id: 'candidate_card_route_channel',
+            options: routeOptions(previewId),
+          },
+        ],
+      },
+    ],
   };
 }
 

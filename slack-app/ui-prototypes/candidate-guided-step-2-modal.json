@@ -1,0 +1,204 @@
+{
+  "type": "modal",
+  "callback_id": "candidate_profile_guided_step_2",
+  "private_metadata": "{\"kind\":\"candidate_profile\",\"flow\":\"guided\",\"step\":2,\"data\":{\"headline\":\"Staff Product Engineer / Engineering Manager\",\"locationSummary\":\"Seattle, WA, open to US remote roles\",\"workArrangements\":[\"remote\",\"hybrid\"],\"availabilityModes\":[\"open_to_opportunities\"],\"engagementTypes\":[\"full_time\",\"contract\"],\"compensationDisclosure\":\"range_provided\",\"compensationValue\":\"$210k+ base\",\"compensationComponents\":[\"equity\",\"bonus\"],\"visaPolicy\":\"unknown\",\"relationship\":\"candidate_self\",\"links\":\"https://linkedin.com/in/example\\nhttps://github.com/example\",\"skills\":\"JavaScript, TypeScript, Rails, Product strategy\",\"notes\":\"Open to senior IC and EM roles at mission-driven companies.\",\"allowThreadQuestions\":true}}",
+  "title": {
+    "type": "plain_text",
+    "text": "Share Candidate (2/3)",
+    "emoji": true
+  },
+  "submit": {
+    "type": "plain_text",
+    "text": "Next",
+    "emoji": true
+  },
+  "close": {
+    "type": "plain_text",
+    "text": "Cancel",
+    "emoji": true
+  },
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "plain_text",
+        "text": "Now add role fit and compensation so recruiters can quickly calibrate.",
+        "emoji": true
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Step 2: Role and Compensation",
+        "emoji": true
+      }
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_engagement_types_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Engagement types",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "candidate_engagement_types_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Full-time",
+              "emoji": true
+            },
+            "value": "full_time"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Part-time",
+              "emoji": true
+            },
+            "value": "part_time"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Contract",
+              "emoji": true
+            },
+            "value": "contract"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Consulting",
+              "emoji": true
+            },
+            "value": "consulting"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Cofounder",
+              "emoji": true
+            },
+            "value": "cofounder"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_compensation_disclosure_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Compensation visibility",
+        "emoji": true
+      },
+      "element": {
+        "type": "radio_buttons",
+        "action_id": "candidate_compensation_disclosure_radio",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Range provided",
+              "emoji": true
+            },
+            "value": "range_provided"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Negotiable or TBD",
+              "emoji": true
+            },
+            "value": "negotiable"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Not listed",
+              "emoji": true
+            },
+            "value": "not_listed"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Commission or variable",
+              "emoji": true
+            },
+            "value": "performance_based"
+          }
+        ]
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_compensation_value_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Pay number or range",
+        "emoji": true
+      },
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "candidate_compensation_value_input",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Examples: $180-$220k USD, 1-4%, or Negotiable",
+          "emoji": true
+        }
+      },
+      "optional": false
+    },
+    {
+      "type": "input",
+      "block_id": "candidate_compensation_components_block",
+      "label": {
+        "type": "plain_text",
+        "text": "Components",
+        "emoji": true
+      },
+      "element": {
+        "type": "checkboxes",
+        "action_id": "candidate_compensation_components_checkbox",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Equity",
+              "emoji": true
+            },
+            "value": "equity"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Bonus",
+              "emoji": true
+            },
+            "value": "bonus"
+          },
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Commission",
+              "emoji": true
+            },
+            "value": "commission"
+          }
+        ]
+      },
+      "optional": true
+    }
+  ]
+}

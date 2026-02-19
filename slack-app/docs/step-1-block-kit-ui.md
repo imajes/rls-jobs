@@ -6,6 +6,13 @@ Date: 2026-02-18
 
 The previous sample `sample_step` app was replaced with a modular Bolt app that provides structured intake modals for job posts and candidate posts.
 
+This was later iterated with a prototype-first workflow. The current app now reflects those prototype decisions:
+
+- guided 3-step modal flow for jobs and candidates
+- richer summary cards for feed-style scanning
+- full-details opened in modal surface
+- channel routing moved to preview overflow actions
+
 ## New Slack entry points
 
 - Global shortcut: `post_job_shortcut`
@@ -85,7 +92,7 @@ Implemented with Slack inline modal errors (`response_action: errors`):
 On successful submit:
 
 - app computes recommended channel focus
-- app sends a DM preview to submitter with structured summary
+- app sends a DM preview to submitter with compact card summary and actions
 - no channel publish and no API call yet (Step Two scope)
 
 ## Environment additions

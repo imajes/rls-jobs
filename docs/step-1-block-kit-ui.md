@@ -77,6 +77,18 @@ Routing heuristic:
 - Stealth company support via checkbox and company field exemption.
 - Thread openness captured explicitly to support later thread-enhancement work.
 
+## Iteration update (prototype-first pass)
+
+After the first implementation pass, the UI was reworked to match visual and editorial feedback:
+
+- moved from single-step default to guided 3-step modal flows for both job and candidate posting
+- reduced dropdown-heavy interactions in favor of checkbox/radio controls for multi-applicable answers
+- replaced generic summary heading with madlibs-style role headline in preview cards
+- switched full-details interaction to modal surface instead of long in-channel body
+- added quick actions in summary cards (`Open Details`, `Quick Apply`, `Save`)
+- shifted channel targeting to preview action overflow rather than primary intake friction
+- removed job compensation disclosure selector and kept direct structured pay/range entry + components
+
 ## Deliberately deferred (documented)
 
 - New-account moderation queue / account-age gate:
