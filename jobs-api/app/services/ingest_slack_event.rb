@@ -4,6 +4,9 @@ require 'json'
 class IngestSlackEvent
   Result = Struct.new(:posting, :intake_event, :duplicate, :errors, keyword_init: true)
 
+  EVENT_TYPES = %w[slack_post_published slack_post_updated slack_post_archived].freeze
+  KINDS = %w[job_posting candidate_profile].freeze
+
   STATUS_BY_EVENT = {
     'slack_post_published' => 'active',
     'slack_post_updated' => 'active',
@@ -18,12 +21,13 @@ class IngestSlackEvent
 
   def call
     validate_payload!
-    return failure_result if @errors.any?
+    return failure_result_with_capture if @errors.any?
 
     fingerprint = payload_fingerprint
     existing_event = IntakeEvent.find_by(event_fingerprint: fingerprint)
     if existing_event
       posting = Posting.find_by(external_posting_id: existing_event.external_posting_id)
+      IngestFailure.resolve_for_fingerprint!(fingerprint)
       return Result.new(posting: posting, intake_event: existing_event, duplicate: true, errors: [])
     end
 
@@ -46,18 +50,22 @@ class IngestSlackEvent
         user_id: slack_value('publishedByUserId'),
         occurred_at: event_time,
         received_at: received_at,
+        payload_version: payload_version,
         payload: JSON.generate(payload)
       )
+      IngestFailure.resolve_for_fingerprint!(fingerprint)
     end
 
     Result.new(posting: posting, intake_event: intake_event, duplicate: false, errors: [])
   rescue ActiveRecord::RecordNotUnique
-    existing = IntakeEvent.find_by(event_fingerprint: fingerprint)
+    existing = IntakeEvent.find_by(event_fingerprint: payload_fingerprint)
     posting = Posting.find_by(external_posting_id: existing&.external_posting_id)
     Result.new(posting: posting, intake_event: existing, duplicate: true, errors: [])
   rescue ActiveRecord::RecordInvalid => e
+    capture_failure(e.message)
     Result.new(posting: nil, intake_event: nil, duplicate: false, errors: [e.message])
   rescue StandardError => e
+    capture_failure(e.message)
     Result.new(posting: nil, intake_event: nil, duplicate: false, errors: [e.message])
   end
 
@@ -66,12 +74,54 @@ class IngestSlackEvent
   attr_reader :payload, :received_at
 
   def validate_payload!
-    @errors << 'eventType is required' if payload['eventType'].blank?
-    @errors << 'kind is required' if payload['kind'].blank?
+    event_type = payload['eventType']
+    kind = payload['kind']
+
+    if event_type.blank?
+      @errors << 'eventType is required'
+    elsif !EVENT_TYPES.include?(event_type)
+      @errors << "eventType must be one of: #{EVENT_TYPES.join(', ')}"
+    end
+
+    if kind.blank?
+      @errors << 'kind is required'
+    elsif !KINDS.include?(kind)
+      @errors << "kind must be one of: #{KINDS.join(', ')}"
+    end
+
     @errors << 'values must be an object' unless payload['values'].is_a?(Hash)
+    @errors << 'route must be an object' unless payload['route'].is_a?(Hash)
+    @errors << 'slack must be an object' unless payload['slack'].is_a?(Hash)
+
+    if route_value('channelId').blank?
+      @errors << 'route.channelId is required'
+    end
+
+    if route_value('channelFocus').blank?
+      @errors << 'route.channelFocus is required'
+    end
+
+    if slack_value('teamId').blank?
+      @errors << 'slack.teamId is required'
+    end
+
+    if slack_value('publishedByUserId').blank?
+      @errors << 'slack.publishedByUserId is required'
+    end
+
+    if values_value('posterUserId').blank?
+      @errors << 'values.posterUserId is required'
+    end
+
+    if payload['postingId'].blank? && payload['previewId'].blank?
+      @errors << 'postingId or previewId is required'
+    end
+
+    @errors << 'payloadVersion must be a positive integer' unless payload_version.positive?
   end
 
-  def failure_result
+  def failure_result_with_capture
+    capture_failure(@errors.join('; '))
     Result.new(posting: nil, intake_event: nil, duplicate: false, errors: @errors)
   end
 
@@ -99,6 +149,9 @@ class IngestSlackEvent
     if payload['eventType'] == 'slack_post_archived'
       posting.archived_at = parse_time(payload['archivedAt']) || received_at
       posting.archived_by_user_id = payload['archivedByUserId'].presence || posting.archived_by_user_id
+    elsif posting.status == 'active'
+      posting.archived_at = nil
+      posting.archived_by_user_id = nil
     end
 
     posting.last_event_at = event_time || received_at
@@ -114,10 +167,29 @@ class IngestSlackEvent
     posting.summary = values['summary'] || values['notes']
     posting.search_text = Posting.search_text_from_values(values)
 
+    apply_moderation!(posting)
+
     posting.values_payload = JSON.generate(values)
     posting.last_payload = JSON.generate(payload)
     posting.save!
     posting
+  end
+
+  def apply_moderation!(posting)
+    moderation = payload['moderation']
+    return unless moderation.is_a?(Hash)
+
+    flagged = moderation['flagged'] == true
+    posting.moderation_flagged = flagged
+    posting.moderation_reason = moderation['reason'].presence
+
+    if moderation['accountAgeDays'].present?
+      posting.account_age_days = moderation['accountAgeDays'].to_i
+    end
+
+    if flagged && posting.moderation_state.in?(%w[reviewed cleared])
+      posting.moderation_state = 'unreviewed'
+    end
   end
 
   def external_posting_id
@@ -138,6 +210,13 @@ class IngestSlackEvent
     slack[key]
   end
 
+  def values_value(key)
+    values = payload['values']
+    return nil unless values.is_a?(Hash)
+
+    values[key]
+  end
+
   def event_time
     parse_time(payload['postedAt']) || parse_time(payload['updatedAt']) || parse_time(payload['archivedAt'])
   end
@@ -148,6 +227,15 @@ class IngestSlackEvent
     Time.zone.parse(value)
   rescue ArgumentError
     nil
+  end
+
+  def payload_version
+    version = payload['payloadVersion']
+    return 1 if version.blank?
+
+    Integer(version)
+  rescue ArgumentError, TypeError
+    -1
   end
 
   def payload_fingerprint
@@ -166,5 +254,18 @@ class IngestSlackEvent
     else
       value
     end
+  end
+
+  def capture_failure(reason)
+    IngestFailure.record!(
+      event_fingerprint: payload_fingerprint,
+      event_type: payload['eventType'],
+      kind: payload['kind'],
+      payload: payload,
+      reason: reason,
+      occurred_at: received_at
+    )
+  rescue StandardError
+    nil
   end
 end

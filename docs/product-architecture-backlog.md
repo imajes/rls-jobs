@@ -2,9 +2,12 @@
 
 Date: 2026-02-18
 
-## Pending: New-account moderation policy
+## Moderation policy status
 
-Status: parked (not implemented yet)
+Status:
+
+- soft gate implemented in Step Eight
+- hard gate still parked pending calibration
 
 Context:
 
@@ -17,6 +20,11 @@ Candidate approaches:
    - Allow posting.
    - Tag posts with `new_account=true` metadata.
    - Optionally send moderator signal.
+   - Current implementation:
+     - `RLS_MODERATION_ENABLED=true` (default)
+     - `RLS_NEW_ACCOUNT_DAYS=14` (default)
+     - optional `RLS_MOD_QUEUE_CHANNEL_ID` notifications
+     - admin actions: `mark_reviewed`, `clear_flag`, `escalate`
 
 2. Hard gate
    - Hold posts from accounts younger than threshold (for example 14 or 30 days).
@@ -34,6 +42,6 @@ Data requirements if pursued:
 
 Decision needed before implementation:
 
-- whether to gate at all
-- account age threshold
-- who moderates and expected SLA
+- whether to escalate to hard gate
+- calibrated account-age threshold from observed data
+- moderation ownership/SLA for hold queue if hard gate is enabled

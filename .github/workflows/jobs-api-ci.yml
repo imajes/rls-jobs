@@ -1,0 +1,39 @@
+name: Jobs API CI
+
+on:
+  pull_request:
+    paths:
+      - 'jobs-api/**'
+      - '.github/workflows/jobs-api-ci.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'jobs-api/**'
+      - '.github/workflows/jobs-api-ci.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: jobs-api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.5'
+          bundler-cache: true
+          working-directory: jobs-api
+
+      - name: Prepare DB
+        env:
+          RAILS_ENV: test
+        run: bin/rails db:test:prepare
+
+      - name: Run tests
+        env:
+          RAILS_ENV: test
+        run: bin/rails test

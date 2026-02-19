@@ -7,6 +7,7 @@ RUN npm ci --omit=dev
 
 COPY app.js manifest.json ./
 COPY src ./src
+RUN mkdir -p /app/storage
 
 ENV NODE_ENV=production
 

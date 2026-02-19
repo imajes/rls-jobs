@@ -40,6 +40,7 @@ class IngestSlackEventTest < ActiveSupport::TestCase
     assert_equal "Pied Piper", result.posting.company_name
     assert_equal 1, Posting.count
     assert_equal 1, IntakeEvent.count
+    assert_equal 1, result.intake_event.payload_version
   end
 
   test "returns duplicate for replayed payload" do
@@ -77,6 +78,7 @@ class IngestSlackEventTest < ActiveSupport::TestCase
     assert_nil result.posting
     assert_equal 0, Posting.count
     assert_equal 0, IntakeEvent.count
+    assert_equal 1, IngestFailure.count
   end
 
   test "falls back external posting id when postingId missing" do
@@ -86,5 +88,33 @@ class IngestSlackEventTest < ActiveSupport::TestCase
 
     result = IngestSlackEvent.new(payload: payload).call
     assert_equal "preview-1:C123:candidate_profile", result.posting.external_posting_id
+  end
+
+  test "rejects unsupported event type and records failure" do
+    payload = base_payload.merge(eventType: "slack_post_deleted")
+
+    result = IngestSlackEvent.new(payload: payload).call
+
+    assert_equal true, result.errors.any?
+    assert_equal 0, IntakeEvent.count
+    assert_equal 1, IngestFailure.count
+    assert_match(/eventType must be one of/i, IngestFailure.first.reason)
+  end
+
+  test "stores moderation metadata when provided" do
+    payload = base_payload.merge(
+      moderation: {
+        flagged: true,
+        reason: "account_age_lt_14",
+        accountAgeDays: 3
+      }
+    )
+
+    result = IngestSlackEvent.new(payload: payload).call
+    posting = result.posting
+
+    assert_equal true, posting.moderation_flagged
+    assert_equal "account_age_lt_14", posting.moderation_reason
+    assert_equal 3, posting.account_age_days
   end
 end

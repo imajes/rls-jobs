@@ -11,8 +11,13 @@ function createPosting({
   channelFocus,
   messageTs = '',
   permalink = '',
+  status = 'active',
+  createdAt = Date.now(),
+  updatedAt = Date.now(),
+  moderation = null,
+  archivedAt = null,
+  archivedByUserId = null,
 }) {
-  const now = Date.now();
   const posting = {
     id,
     kind,
@@ -22,11 +27,12 @@ function createPosting({
     channelFocus,
     messageTs,
     permalink,
-    status: 'active',
-    createdAt: now,
-    updatedAt: now,
-    archivedAt: null,
-    archivedByUserId: null,
+    status,
+    createdAt,
+    updatedAt,
+    archivedAt,
+    archivedByUserId,
+    moderation,
   };
   postings.set(id, posting);
   return posting;
@@ -79,11 +85,40 @@ function listPostingsByUser(userId, { limit = 50 } = {}) {
     .slice(0, limit);
 }
 
+function upsertPosting(snapshot) {
+  if (!snapshot?.id) {
+    return null;
+  }
+
+  const existing = postings.get(snapshot.id);
+  if (!existing) {
+    return createPosting({
+      ...snapshot,
+      status: snapshot.status || 'active',
+      createdAt: snapshot.createdAt || Date.now(),
+      updatedAt: snapshot.updatedAt || Date.now(),
+    });
+  }
+
+  Object.assign(existing, snapshot, {
+    updatedAt: snapshot.updatedAt || Date.now(),
+  });
+  return existing;
+}
+
+function syncPostings(postingSnapshots = []) {
+  for (const snapshot of postingSnapshots) {
+    upsertPosting(snapshot);
+  }
+}
+
 module.exports = {
   archivePosting,
   createPosting,
   findPostingByMessage,
   getPosting,
   listPostingsByUser,
+  syncPostings,
+  upsertPosting,
   updatePosting,
 };

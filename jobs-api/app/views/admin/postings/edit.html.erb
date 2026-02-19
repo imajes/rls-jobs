@@ -76,6 +76,26 @@
         <%= form.text_field :permalink, class: "text-field" %>
       </label>
 
+      <label>
+        Moderation flagged
+        <%= form.select :moderation_flagged, options_for_select([["No", false], ["Yes", true]], @posting.moderation_flagged), {}, class: "select-field" %>
+      </label>
+
+      <label>
+        Moderation state
+        <%= form.select :moderation_state, options_for_select([["Unreviewed", "unreviewed"], ["Reviewed", "reviewed"], ["Cleared", "cleared"], ["Escalated", "escalated"]], @posting.moderation_state), {}, class: "select-field" %>
+      </label>
+
+      <label>
+        Moderation reason
+        <%= form.text_field :moderation_reason, class: "text-field" %>
+      </label>
+
+      <label>
+        Account age days
+        <%= form.number_field :account_age_days, min: 0, class: "text-field" %>
+      </label>
+
       <label class="admin-values-json">
         Values payload JSON
         <%= text_area_tag "posting[values_payload_json]", @values_json, rows: 20, class: "text-field code-field" %>

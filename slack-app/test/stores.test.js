@@ -71,3 +71,28 @@ test('posting store supports create/update/archive/list and message lookup', () 
   assert.equal(a.posterUserId, 'U1');
   assert.equal(b.posterUserId, 'U1');
 });
+
+test('posting store syncs api snapshots into local state', () => {
+  const postingStore = loadFresh('../src/posting-store');
+
+  postingStore.syncPostings([
+    {
+      id: 'api-posting-1',
+      kind: 'job_posting',
+      status: 'active',
+      values: { roleTitle: 'Senior Engineer' },
+      posterUserId: 'UAPI',
+      channelId: 'CAPI',
+      channelFocus: 'jobs',
+      messageTs: '300.3',
+      permalink: 'https://slack.test/api-posting-1',
+      createdAt: 1000,
+      updatedAt: 2000,
+    },
+  ]);
+
+  const posting = postingStore.getPosting('api-posting-1');
+  assert.equal(posting.kind, 'job_posting');
+  assert.equal(posting.posterUserId, 'UAPI');
+  assert.equal(posting.messageTs, '300.3');
+});

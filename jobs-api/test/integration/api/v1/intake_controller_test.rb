@@ -115,6 +115,20 @@ module Api
         assert_includes body["errors"].join(" "), "values must be an object"
       end
 
+      test "rejects invalid event type allowlist value" do
+        invalid_payload = base_payload.merge("eventType" => "slack_post_deleted")
+
+        post api_v1_intake_path,
+             params: invalid_payload.to_json,
+             headers: json_headers
+
+        assert_response :unprocessable_entity
+        body = JSON.parse(response.body)
+        assert_equal false, body["ok"]
+        assert_includes body["errors"].join(" "), "eventType must be one of"
+        assert_equal 1, IngestFailure.count
+      end
+
       private
 
       def json_headers

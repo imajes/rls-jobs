@@ -61,6 +61,9 @@ async function start() {
       process.on(signal, async () => {
         app.logger.info(`Received ${signal}. Stopping app...`);
         try {
+          if (app.__rlsOutbox && typeof app.__rlsOutbox.stop === 'function') {
+            app.__rlsOutbox.stop();
+          }
           await app.stop();
           process.exit(0);
         } catch (error) {

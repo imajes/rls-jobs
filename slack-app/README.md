@@ -26,8 +26,11 @@ Structured Slack intake for job postings and candidate availability using Bolt f
 - Optional webhook send to jobs API after publish
 - Optional lifecycle webhook send to jobs API on publish/edit/archive
 - App Home view with "Your RLS Postings"
+- API-first App Home hydration (feature-flagged) with local fallback
 - Poster-only edit and archive actions for published postings
 - One-time auth link command to bootstrap RLS-gated web session
+- Durable lifecycle ingest outbox with retry/dead-letter files
+- Soft moderation enrichment (new-account flag metadata + optional mod queue notification)
 
 Step Three packages this for deployment and go-live.
 Step Four/Step Six extend API sync and secure web-auth bootstrap.
@@ -79,6 +82,7 @@ Run image:
 ```zsh
 docker run --rm \
   --env-file .env \
+  -v $(pwd)/storage:/app/storage \
   rls-jobs-slack-app:latest
 ```
 
@@ -118,9 +122,20 @@ Optional:
 - `RLS_CHANNEL_JOBS_COFOUNDERS_ID`
 - `RLS_CHANNEL_JOBS_CONSULTING_ID`
 - `RLS_JOBS_API_INGEST_URL`
+- `RLS_JOBS_API_POSTINGS_URL`
 - `RLS_JOBS_API_AUTH_LINK_URL`
 - `RLS_JOBS_API_TOKEN`
 - `RLS_JOBS_API_TIMEOUT_MS`
+- `RLS_API_READ_ENABLED`
+- `RLS_OUTBOX_ENABLED`
+- `RLS_OUTBOX_PATH`
+- `RLS_OUTBOX_DEAD_PATH`
+- `RLS_OUTBOX_FLUSH_INTERVAL_MS`
+- `RLS_INGEST_RETRY_MAX_ATTEMPTS`
+- `RLS_INGEST_RETRY_BASE_MS`
+- `RLS_MODERATION_ENABLED`
+- `RLS_NEW_ACCOUNT_DAYS`
+- `RLS_MOD_QUEUE_CHANNEL_ID`
 
 ## Notes
 
@@ -131,4 +146,6 @@ Optional:
 - Incoming Slack request signature verification is handled by Bolt.
 - For publishing to private channels, invite the bot to each target channel.
 - After manifest changes, reinstall or update app settings so `app_home_opened` events are enabled.
+- `users:read` bot scope is required for account-age moderation enrichment.
+- Outbox durability requires persistent storage mounted to `/app/storage`.
 - For production rollout, see `slack-app/docs/step-3-go-live.md`.

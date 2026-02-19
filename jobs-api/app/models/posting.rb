@@ -1,16 +1,26 @@
 class Posting < ApplicationRecord
+  KINDS = %w[job_posting candidate_profile].freeze
+  STATUSES = %w[active archived].freeze
+  MODERATION_STATES = %w[unreviewed reviewed cleared escalated].freeze
+
   has_many :intake_events, dependent: :nullify
+  before_validation :apply_default_moderation_state
 
   validates :external_posting_id, presence: true, uniqueness: true
   validates :kind, presence: true
   validates :status, presence: true
   validates :values_payload, presence: true
   validates :last_payload, presence: true
+  validates :kind, inclusion: { in: KINDS }
+  validates :status, inclusion: { in: STATUSES }
+  validates :moderation_state, inclusion: { in: MODERATION_STATES }
 
   scope :jobs, -> { where(kind: 'job_posting') }
   scope :candidates, -> { where(kind: 'candidate_profile') }
   scope :active, -> { where(status: 'active') }
   scope :archived, -> { where(status: 'archived') }
+  scope :moderation_flagged, -> { where(moderation_flagged: true) }
+  scope :moderation_state_is, ->(state) { where(moderation_state: state) }
 
   def self.search_text_from_values(values)
     normalized = values.to_h.deep_stringify_keys
@@ -70,5 +80,11 @@ class Posting < ApplicationRecord
       search_text: self.class.search_text_from_values(values)
     )
     save!
+  end
+
+  private
+
+  def apply_default_moderation_state
+    self.moderation_state = 'unreviewed' if moderation_state.blank?
   end
 end

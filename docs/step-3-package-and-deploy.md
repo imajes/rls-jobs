@@ -43,7 +43,8 @@ Still intentionally deferred until Step Four:
 
 - durable persistence for postings/preview state (currently in-memory)
 - webhook ingest endpoint implementation in Rails
-- retry queue / dead letter strategy for failed webhook delivery
+
+Note: retry queue/dead-letter strategy and API-first posting restoration were implemented in Step Eight hardening.
 
 ## Next step linkage
 

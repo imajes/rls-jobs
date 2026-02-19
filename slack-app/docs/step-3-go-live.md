@@ -38,9 +38,26 @@ Recommended for full publish routing:
 Optional webhook:
 
 - `RLS_JOBS_API_INGEST_URL`
+- `RLS_JOBS_API_POSTINGS_URL` (for API-first App Home reads)
 - `RLS_JOBS_API_AUTH_LINK_URL` (required for `/rls-jobs-auth`)
 - `RLS_JOBS_API_TOKEN`
 - `RLS_JOBS_API_TIMEOUT_MS` (default `5000`)
+- `RLS_API_READ_ENABLED` (default `false`)
+
+Optional durable outbox controls:
+
+- `RLS_OUTBOX_ENABLED` (default `false`)
+- `RLS_OUTBOX_PATH` (default `storage/ingest-outbox.ndjson`)
+- `RLS_OUTBOX_DEAD_PATH` (default `storage/ingest-outbox.dead.ndjson`)
+- `RLS_OUTBOX_FLUSH_INTERVAL_MS` (default `15000`)
+- `RLS_INGEST_RETRY_MAX_ATTEMPTS` (default `10`)
+- `RLS_INGEST_RETRY_BASE_MS` (default `1000`)
+
+Optional moderation controls:
+
+- `RLS_MODERATION_ENABLED` (default `true`)
+- `RLS_NEW_ACCOUNT_DAYS` (default `14`)
+- `RLS_MOD_QUEUE_CHANNEL_ID`
 
 ## 4. Manifest and app settings checklist
 
@@ -55,6 +72,7 @@ Verify `manifest.json` includes:
   - `commands`
   - `chat:write`
   - `chat:write.public`
+  - `users:read`
 - App Home enabled
 - event subscription:
   - `app_home_opened`
@@ -91,10 +109,11 @@ npm run start:prod
 
 ```zsh
 docker build -t rls-jobs-slack-app:latest .
-docker run --rm --env-file .env rls-jobs-slack-app:latest
+docker run --rm --env-file .env -v $(pwd)/storage:/app/storage rls-jobs-slack-app:latest
 ```
 
 No inbound port is needed for Socket Mode.
+If outbox durability is enabled, the storage volume mount is required.
 
 ## 7. Post-deploy smoke tests
 
@@ -123,6 +142,8 @@ Expected runtime logs:
 - preview created
 - publish success path
 - webhook failures as warnings (non-blocking)
+- outbox dead-letter alerts (if retries exhausted)
+- API read fallback warnings (stale cache/local fallback)
 
 ## 9. Rollback
 
@@ -132,4 +153,4 @@ If a release is unhealthy:
 2. redeploy prior image/build
 3. verify slash command and publish flow
 
-Because current posting/preview stores are in-memory, restarting the worker clears runtime state. This is expected until Step Four persistence.
+Preview state remains in-memory by design. Published posting management is now restored from API reads when enabled.

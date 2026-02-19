@@ -5,9 +5,13 @@ Ingests structured Slack posting events and serves a protected browse UI for job
 ## Features implemented
 
 - Webhook ingest endpoint: `POST /api/v1/intake`
+- Slack read endpoints:
+  - `GET /api/v1/postings`
+  - `GET /api/v1/postings/:external_posting_id`
 - Durable persistence:
   - `postings` (current materialized listing state)
   - `intake_events` (immutable ingest history)
+  - `ingest_failures` (failed ingest payload capture/replay)
 - RLS auth bootstrap:
   - `POST /api/v1/auth_links` (issues one-time links)
   - `GET /auth/slack/:token` (redeem link and start session)
@@ -47,6 +51,7 @@ Ingests structured Slack posting events and serves a protected browse UI for job
   - edit normalized fields
   - repair values payload JSON
   - resync normalized fields from JSON payload
+  - moderation actions (`mark_reviewed`, `clear_flag`, `escalate`)
   - bulk-delete stale archived postings older than N days
 
 ## Local development
@@ -54,6 +59,7 @@ Ingests structured Slack posting events and serves a protected browse UI for job
 Run migrations and tests in a Rails-8-compatible Ruby/Bundler environment:
 
 ```zsh
+ruby -v # should match `.ruby-version` (ruby-3.4.5)
 bin/rails db:migrate
 bin/rails test
 ```
@@ -69,3 +75,4 @@ bin/rails server
 - `docs/step-4-ingest-and-persistence.md`
 - `docs/step-5-browse-ui.md`
 - `docs/step-6-rls-auth.md`
+- `docs/step-8-data-hardening-and-moderation.md`

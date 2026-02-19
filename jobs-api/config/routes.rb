@@ -3,6 +3,8 @@ Rails.application.routes.draw do
     namespace :v1 do
       post "intake", to: "intake#create"
       post "auth_links", to: "auth_links#create"
+      get "postings", to: "postings#index"
+      get "postings/:external_posting_id", to: "postings#show", as: :posting
     end
   end
 
@@ -27,6 +29,9 @@ Rails.application.routes.draw do
         patch :archive
         patch :restore
         patch :resync
+        patch :mark_reviewed
+        patch :clear_flag
+        patch :escalate
       end
 
       collection do

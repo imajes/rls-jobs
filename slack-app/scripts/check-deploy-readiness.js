@@ -42,7 +42,7 @@ function checkManifest(manifest) {
   }
 
   const botScopes = manifest.oauth_config?.scopes?.bot || [];
-  for (const scope of ['chat:write', 'chat:write.public', 'commands']) {
+  for (const scope of ['chat:write', 'chat:write.public', 'commands', 'users:read']) {
     if (!botScopes.includes(scope)) {
       failures.push(`manifest oauth bot scope missing ${scope}`);
     }

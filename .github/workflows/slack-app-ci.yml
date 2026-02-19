@@ -1,0 +1,38 @@
+name: Slack App CI
+
+on:
+  pull_request:
+    paths:
+      - 'slack-app/**'
+      - '.github/workflows/slack-app-ci.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'slack-app/**'
+      - '.github/workflows/slack-app-ci.yml'
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: slack-app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+          cache-dependency-path: slack-app/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test

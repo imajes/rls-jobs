@@ -4,7 +4,8 @@ const { CHANNEL_LABELS, mapFocusToChannelId, recommendChannel } = require('./cha
 const { buildAppHomeView } = require('./app-home');
 const { POST_KIND } = require('./constants');
 const { buildCandidateDetailsModal, buildJobDetailsModal } = require('./details-modals');
-const { createAuthLink, postIntakeEvent } = require('./jobs-api-client');
+const { IngestOutbox } = require('./ingest-outbox');
+const { createAuthLink, getPosting: getPostingFromApi, listPostings, postIntakeEvent } = require('./jobs-api-client');
 const {
   buildCandidateGuidedStep1Modal,
   buildCandidateGuidedStep2Modal,
@@ -21,8 +22,10 @@ const {
   findPostingByMessage,
   getPosting,
   listPostingsByUser,
+  syncPostings,
   updatePosting,
 } = require('./posting-store');
+const { createPostingsCache } = require('./postings-cache');
 const {
   createPreview,
   getPreview,
@@ -196,9 +199,50 @@ function routeMissingConfigMessage(channelFocus) {
   return `Route is set to ${label}, but no channel ID is configured. Set ${envKey} and try again.`;
 }
 
-async function publishHome(client, userId, logger) {
+function createHomePostingsLoader(config, logger, postingsCache) {
+  return async (userId) => {
+    const localPostings = listPostingsByUser(userId);
+
+    if (!config.jobsApi.readEnabled) {
+      return localPostings;
+    }
+
+    const cached = postingsCache.get(userId);
+    if (cached && !cached.stale) {
+      return cached.postings;
+    }
+
+    const apiResult = await listPostings(
+      config,
+      {
+        posterUserId: userId,
+        status: 'all',
+        limit: 50,
+      },
+      logger,
+    );
+
+    if (apiResult.fetched) {
+      syncPostings(apiResult.postings);
+      const merged = listPostingsByUser(userId);
+      postingsCache.set(userId, merged);
+      return merged;
+    }
+
+    if (cached?.postings?.length) {
+      logger.warn(`jobs_api_read_fallback source=stale_cache reason=${apiResult.reason}`);
+      return cached.postings;
+    }
+
+    logger.warn(`jobs_api_read_fallback source=local_store reason=${apiResult.reason}`);
+    postingsCache.set(userId, localPostings);
+    return localPostings;
+  };
+}
+
+async function publishHome(client, userId, logger, getPostingsForHome) {
   try {
-    const postings = listPostingsByUser(userId);
+    const postings = await getPostingsForHome(userId);
     await client.views.publish({
       user_id: userId,
       view: buildAppHomeView(postings),
@@ -222,11 +266,13 @@ function buildIngestPayload({
   teamId = '',
   actorUserId = '',
   values = {},
+  moderation = {},
   extra = {},
 }) {
   const channelLabel = CHANNEL_LABELS[posting.channelFocus] || '#jobs';
 
   return {
+    payloadVersion: 1,
     eventType,
     kind: posting.kind,
     previewId,
@@ -244,24 +290,145 @@ function buildIngestPayload({
       publishedMessageTs: posting.messageTs || '',
       publishedByUserId: actorUserId,
     },
+    moderation,
     values,
     ...extra,
   };
 }
 
-async function postLifecycleIngestEvent(config, logger, payload) {
-  const ingestResult = await postIntakeEvent(config, payload, logger);
+async function postLifecycleIngestEvent(config, logger, payload, outbox) {
+  if (!config.jobsApi?.ingestUrl) {
+    return;
+  }
+
+  if (!outbox) {
+    return;
+  }
+
+  const ingestResult = await outbox.enqueueAndDeliver(payload);
   if (!ingestResult.sent && ingestResult.reason !== 'not_configured') {
     logger.warn(`jobs_api_ingest_not_sent reason=${ingestResult.reason} event=${payload.eventType}`);
   }
 }
 
-function postingFromAction(body) {
+async function fetchModerationMetadata(client, config, userId, logger) {
+  if (!config.moderation.enabled) {
+    return {
+      enabled: false,
+      flagged: false,
+      reason: 'moderation_disabled',
+      accountAgeDays: null,
+      thresholdDays: config.moderation.newAccountDays,
+    };
+  }
+
+  try {
+    const response = await client.users.info({ user: userId });
+    const createdSeconds = Number(response.user?.created || 0);
+    if (!createdSeconds) {
+      return {
+        enabled: true,
+        flagged: false,
+        reason: 'missing_user_created',
+        accountAgeDays: null,
+        thresholdDays: config.moderation.newAccountDays,
+      };
+    }
+
+    const accountAgeDays = Math.max(0, Math.floor((Date.now() / 1000 - createdSeconds) / 86400));
+    const flagged = accountAgeDays < config.moderation.newAccountDays;
+
+    return {
+      enabled: true,
+      flagged,
+      reason: flagged ? `account_age_lt_${config.moderation.newAccountDays}` : '',
+      accountAgeDays,
+      thresholdDays: config.moderation.newAccountDays,
+    };
+  } catch (error) {
+    logger.warn('moderation_lookup_failed', error);
+    return {
+      enabled: true,
+      flagged: false,
+      reason: 'lookup_failed',
+      accountAgeDays: null,
+      thresholdDays: config.moderation.newAccountDays,
+    };
+  }
+}
+
+async function notifyModerationQueueIfNeeded(client, config, posting, moderation, logger) {
+  if (!moderation?.flagged || !config.moderation.modQueueChannelId) {
+    return;
+  }
+
+  try {
+    await client.chat.postMessage({
+      channel: config.moderation.modQueueChannelId,
+      text: `Moderation flag: ${posting.kind} ${posting.id} by <@${posting.posterUserId}> (${moderation.reason || 'unspecified'})`,
+      blocks: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text:
+              '*Moderation flag detected*\n' +
+              `• Posting: \`${posting.id}\`\n` +
+              `• Kind: ${posting.kind}\n` +
+              `• Poster: <@${posting.posterUserId}>\n` +
+              `• Account age: ${moderation.accountAgeDays ?? 'unknown'} days\n` +
+              `• Reason: ${moderation.reason || 'unspecified'}`,
+          },
+        },
+        posting.permalink
+          ? {
+              type: 'actions',
+              elements: [
+                {
+                  type: 'button',
+                  text: {
+                    type: 'plain_text',
+                    text: 'Open Slack Post',
+                    emoji: true,
+                  },
+                  url: posting.permalink,
+                  action_id: 'moderation_queue_open_post',
+                },
+              ],
+            }
+          : {
+              type: 'context',
+              elements: [{ type: 'plain_text', text: 'Permalink unavailable', emoji: true }],
+            },
+      ],
+    });
+  } catch (error) {
+    logger.warn('moderation_queue_notify_failed', error);
+  }
+}
+
+async function postingFromAction(body, config, logger) {
   const actionValue = body.actions?.[0]?.value || '';
   const postingId = parsePostingActionValue(actionValue, body);
   if (!postingId) {
     return null;
   }
+
+  const localPosting = getPosting(postingId);
+  if (localPosting) {
+    return localPosting;
+  }
+
+  if (!config.jobsApi.readEnabled) {
+    return null;
+  }
+
+  const apiResult = await getPostingFromApi(config, postingId, logger);
+  if (!apiResult.fetched) {
+    return null;
+  }
+
+  syncPostings([apiResult.posting]);
   return getPosting(postingId);
 }
 
@@ -279,7 +446,17 @@ async function requirePostingOwner(client, userId, posting, actionLabel) {
   return true;
 }
 
-async function publishPreview({ body, client, config, logger, previewId, expectedKind }) {
+async function publishPreview({
+  body,
+  client,
+  config,
+  logger,
+  previewId,
+  expectedKind,
+  outbox,
+  postingsCache,
+  getPostingsForHome,
+}) {
   const preview = getPreview(previewId);
   if (!preview) {
     await sendDm(client, body.user.id, 'That preview expired. Please submit again.');
@@ -325,6 +502,7 @@ async function publishPreview({ body, client, config, logger, previewId, expecte
 
   const label = CHANNEL_LABELS[channelFocus] || '#jobs';
   await sendDm(client, body.user.id, permalink ? `Published to ${label}: ${permalink}` : `Published to ${label}.`);
+  const moderation = await fetchModerationMetadata(client, config, body.user.id, logger);
 
   const posting = createPosting({
     id: postingId,
@@ -335,9 +513,12 @@ async function publishPreview({ body, client, config, logger, previewId, expecte
     channelFocus,
     messageTs: posted.ts || '',
     permalink,
+    moderation,
   });
 
-  await publishHome(client, body.user.id, logger);
+  postingsCache.evict(body.user.id);
+  await publishHome(client, body.user.id, logger, getPostingsForHome);
+  await notifyModerationQueueIfNeeded(client, config, posting, moderation, logger);
 
   await postLifecycleIngestEvent(
     config,
@@ -349,16 +530,33 @@ async function publishPreview({ body, client, config, logger, previewId, expecte
       teamId: body.team?.id || '',
       actorUserId: body.user.id,
       values: preview.values,
+      moderation,
       extra: {
         postedAt: new Date().toISOString(),
         previewDmChannelId: body.container?.channel_id || '',
         previewDmMessageTs: body.container?.message_ts || '',
       },
     }),
+    outbox,
   );
 }
 
 function registerHandlers(app, config) {
+  const postingsCache = createPostingsCache({ ttlMs: config.cache.postingsTtlMs });
+  const getPostingsForHome = createHomePostingsLoader(config, app.logger, postingsCache);
+  const outbox = new IngestOutbox({
+    enabled: config.outbox.enabled,
+    outboxPath: config.outbox.path,
+    deadPath: config.outbox.deadPath,
+    flushIntervalMs: config.outbox.flushIntervalMs,
+    retryMaxAttempts: config.outbox.retryMaxAttempts,
+    retryBaseMs: config.outbox.retryBaseMs,
+    deliver: async (payload) => postIntakeEvent(config, payload, app.logger),
+    logger: app.logger,
+  });
+  outbox.start();
+  app.__rlsOutbox = outbox;
+
   app.shortcut('post_job_shortcut', async ({ ack, body, client, logger }) => {
     await ack();
     try {
@@ -436,7 +634,7 @@ function registerHandlers(app, config) {
   app.command('/rls-job-auth', authCommandHandler);
 
   app.event('app_home_opened', async ({ event, client, logger }) => {
-    await publishHome(client, event.user, logger);
+    await publishHome(client, event.user, logger, getPostingsForHome);
   });
 
   app.view('intake_kind_chooser_modal', async ({ ack, logger, view }) => {
@@ -644,7 +842,7 @@ function registerHandlers(app, config) {
 
   app.action('job_published_open_details', async ({ ack, body, client, logger }) => {
     await ack();
-    const posting = postingFromAction(body);
+    const posting = await postingFromAction(body, config, logger);
     if (!posting) {
       await sendDm(client, body.user.id, 'Posting not found.');
       return;
@@ -659,7 +857,7 @@ function registerHandlers(app, config) {
 
   app.action('candidate_published_open_details', async ({ ack, body, client, logger }) => {
     await ack();
-    const posting = postingFromAction(body);
+    const posting = await postingFromAction(body, config, logger);
     if (!posting) {
       await sendDm(client, body.user.id, 'Posting not found.');
       return;
@@ -674,7 +872,7 @@ function registerHandlers(app, config) {
 
   app.action('published_post_edit', async ({ ack, body, client, logger }) => {
     await ack();
-    const posting = postingFromAction(body);
+    const posting = await postingFromAction(body, config, logger);
     const isOwner = await requirePostingOwner(client, body.user.id, posting, 'edit');
     if (!isOwner) {
       return;
@@ -698,7 +896,7 @@ function registerHandlers(app, config) {
 
   app.action('published_post_archive', async ({ ack, body, client, logger }) => {
     await ack();
-    const posting = postingFromAction(body);
+    const posting = await postingFromAction(body, config, logger);
     const isOwner = await requirePostingOwner(client, body.user.id, posting, 'archive');
     if (!isOwner) {
       return;
@@ -720,7 +918,8 @@ function registerHandlers(app, config) {
         blocks: archivedMessage.blocks,
       });
       await sendDm(client, body.user.id, 'Posting archived.');
-      await publishHome(client, body.user.id, logger);
+      postingsCache.evict(body.user.id);
+      await publishHome(client, body.user.id, logger, getPostingsForHome);
 
       await postLifecycleIngestEvent(
         config,
@@ -731,11 +930,13 @@ function registerHandlers(app, config) {
           teamId: body.team?.id || '',
           actorUserId: body.user.id,
           values: archived.values,
+          moderation: archived.moderation || {},
           extra: {
             archivedAt: new Date().toISOString(),
             archivedByUserId: body.user.id,
           },
         }),
+        outbox,
       );
     } catch (error) {
       logger.error(error);
@@ -785,7 +986,8 @@ function registerHandlers(app, config) {
         blocks: message.blocks,
       });
       await sendDm(client, body.user.id, 'Posting updated.');
-      await publishHome(client, body.user.id, logger);
+      postingsCache.evict(body.user.id);
+      await publishHome(client, body.user.id, logger, getPostingsForHome);
 
       await postLifecycleIngestEvent(
         config,
@@ -796,10 +998,12 @@ function registerHandlers(app, config) {
           teamId: body.team?.id || '',
           actorUserId: body.user.id,
           values: updated.values,
+          moderation: updated.moderation || {},
           extra: {
             updatedAt: new Date().toISOString(),
           },
         }),
+        outbox,
       );
     } catch (error) {
       logger.error(error);
@@ -850,7 +1054,8 @@ function registerHandlers(app, config) {
         blocks: message.blocks,
       });
       await sendDm(client, body.user.id, 'Posting updated.');
-      await publishHome(client, body.user.id, logger);
+      postingsCache.evict(body.user.id);
+      await publishHome(client, body.user.id, logger, getPostingsForHome);
 
       await postLifecycleIngestEvent(
         config,
@@ -861,10 +1066,12 @@ function registerHandlers(app, config) {
           teamId: body.team?.id || '',
           actorUserId: body.user.id,
           values: updated.values,
+          moderation: updated.moderation || {},
           extra: {
             updatedAt: new Date().toISOString(),
           },
         }),
+        outbox,
       );
     } catch (error) {
       logger.error(error);
@@ -948,7 +1155,17 @@ function registerHandlers(app, config) {
     await ack();
     const previewId = body.actions?.[0]?.value;
     try {
-      await publishPreview({ body, client, config, logger, previewId, expectedKind: POST_KIND.JOB });
+      await publishPreview({
+        body,
+        client,
+        config,
+        logger,
+        previewId,
+        expectedKind: POST_KIND.JOB,
+        outbox,
+        postingsCache,
+        getPostingsForHome,
+      });
     } catch (error) {
       logger.error(error);
       await sendDm(client, body.user.id, 'Publish failed. Please try again.');
@@ -959,7 +1176,17 @@ function registerHandlers(app, config) {
     await ack();
     const previewId = body.actions?.[0]?.value;
     try {
-      await publishPreview({ body, client, config, logger, previewId, expectedKind: POST_KIND.CANDIDATE });
+      await publishPreview({
+        body,
+        client,
+        config,
+        logger,
+        previewId,
+        expectedKind: POST_KIND.CANDIDATE,
+        outbox,
+        postingsCache,
+        getPostingsForHome,
+      });
     } catch (error) {
       logger.error(error);
       await sendDm(client, body.user.id, 'Publish failed. Please try again.');

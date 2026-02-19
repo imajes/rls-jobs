@@ -11,6 +11,10 @@
       <div class="stat-card"><p class="stat-label">Total postings</p><p class="stat-value"><%= @stats[:total] %></p></div>
       <div class="stat-card"><p class="stat-label">Archived</p><p class="stat-value"><%= @stats[:archived] %></p></div>
       <div class="stat-card"><p class="stat-label">Ingest events</p><p class="stat-value"><%= @stats[:events] %></p></div>
+      <div class="stat-card"><p class="stat-label">Flagged</p><p class="stat-value"><%= @stats[:flagged] %></p></div>
+      <div class="stat-card"><p class="stat-label">Unreviewed</p><p class="stat-value"><%= @stats[:unreviewed] %></p></div>
+      <div class="stat-card"><p class="stat-label">Escalated</p><p class="stat-value"><%= @stats[:escalated] %></p></div>
+      <div class="stat-card"><p class="stat-label">Ingest failures</p><p class="stat-value"><%= @stats[:ingest_failures] %></p></div>
     </div>
   </section>
 
@@ -28,6 +32,10 @@
       <label>
         Kind
         <%= select_tag :kind, options_for_select([["All", "all"], ["Job", "job_posting"], ["Candidate", "candidate_profile"]], @filters[:kind]), class: "select-field" %>
+      </label>
+      <label>
+        Moderation
+        <%= select_tag :moderation, options_for_select([["All", "all"], ["Flagged", "flagged"], ["Unflagged", "unflagged"], ["Unreviewed", "unreviewed"], ["Reviewed", "reviewed"], ["Cleared", "cleared"], ["Escalated", "escalated"]], @filters[:moderation]), class: "select-field" %>
       </label>
       <label>
         Limit
@@ -63,6 +71,7 @@
               <th>ID</th>
               <th>Kind</th>
               <th>Status</th>
+              <th>Moderation</th>
               <th>Title</th>
               <th>Channel</th>
               <th>Updated</th>
@@ -75,6 +84,11 @@
                 <td><code><%= posting.external_posting_id %></code></td>
                 <td><%= posting.kind %></td>
                 <td><%= posting.status %></td>
+                <td>
+                  <span class="status-pill <%= posting.moderation_flagged ? 'is-archived' : 'is-active' %>">
+                    <%= posting.moderation_flagged ? "⚠️ #{posting.moderation_state}" : posting.moderation_state %>
+                  </span>
+                </td>
                 <td><%= truncate(posting.title, length: 64) %></td>
                 <td><%= posting.channel_label.presence || posting.channel_focus.presence || "-" %></td>
                 <td><%= posting.updated_at.to_fs(:short) %></td>
@@ -86,6 +100,9 @@
                     <%= button_to "Restore", restore_admin_posting_path(posting), method: :patch, class: "button-secondary button-small" %>
                   <% end %>
                   <%= button_to "Resync", resync_admin_posting_path(posting), method: :patch, class: "button-secondary button-small" %>
+                  <%= button_to "Mark reviewed", mark_reviewed_admin_posting_path(posting), method: :patch, class: "button-secondary button-small" %>
+                  <%= button_to "Clear flag", clear_flag_admin_posting_path(posting), method: :patch, class: "button-secondary button-small" %>
+                  <%= button_to "Escalate", escalate_admin_posting_path(posting), method: :patch, class: "button-secondary button-small" %>
                 </td>
               </tr>
             <% end %>

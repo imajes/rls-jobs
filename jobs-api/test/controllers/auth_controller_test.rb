@@ -64,28 +64,34 @@ class AuthControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "hard cap expires session even with ongoing activity" do
-    base = Time.current
-    _link, token = AuthLink.issue!(
-      slack_user_id: "U222",
-      slack_team_id: "T222",
-      slack_user_name: "carol",
-      ttl: 10.minutes
-    )
+    travel_to(Time.zone.parse("2026-02-19T10:00:00Z")) do
+      _link, token = AuthLink.issue!(
+        slack_user_id: "U222",
+        slack_team_id: "T222",
+        slack_user_name: "carol",
+        ttl: 10.minutes
+      )
 
-    get auth_slack_redeem_path(token: token)
-    assert_redirected_to postings_path
+      get auth_slack_redeem_path(token: token)
+      assert_redirected_to postings_path
 
-    travel_to(base + 10.minutes) do
+      travel 10.minutes
       get postings_path
       assert_response :success
-    end
 
-    travel_to(base + 40.minutes) do
+      travel 14.minutes
       get postings_path
       assert_response :success
-    end
 
-    travel_to(base + 61.minutes) do
+      travel 14.minutes
+      get postings_path
+      assert_response :success
+
+      travel 14.minutes
+      get postings_path
+      assert_response :success
+
+      travel 9.minutes
       get postings_path
       assert_redirected_to auth_required_path
     end

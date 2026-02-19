@@ -32,6 +32,7 @@ module Admin
       get admin_postings_path
       assert_response :success
       assert_includes response.body, "Admin results"
+      assert_includes response.body, "Moderation"
     end
 
     test "non-admin is redirected" do
@@ -108,6 +109,38 @@ module Admin
       assert_redirected_to admin_postings_path
       assert_nil Posting.find_by(id: stale.id)
       assert_not_nil Posting.find_by(id: fresh.id)
+    end
+
+    test "mark_reviewed updates moderation fields" do
+      patch mark_reviewed_admin_posting_path(@posting)
+
+      assert_redirected_to admin_postings_path
+      @posting.reload
+      assert_equal "reviewed", @posting.moderation_state
+      assert_equal "UADMIN", @posting.moderation_reviewed_by
+      assert_not_nil @posting.moderation_last_reviewed_at
+    end
+
+    test "clear_flag resets moderation flag" do
+      @posting.update!(moderation_flagged: true, moderation_state: "unreviewed", moderation_reason: "new account")
+
+      patch clear_flag_admin_posting_path(@posting)
+
+      assert_redirected_to admin_postings_path
+      @posting.reload
+      assert_equal false, @posting.moderation_flagged
+      assert_equal "cleared", @posting.moderation_state
+      assert_nil @posting.moderation_reason
+    end
+
+    test "escalate sets moderation to escalated" do
+      patch escalate_admin_posting_path(@posting)
+
+      assert_redirected_to admin_postings_path
+      @posting.reload
+      assert_equal true, @posting.moderation_flagged
+      assert_equal "escalated", @posting.moderation_state
+      assert_equal "UADMIN", @posting.moderation_reviewed_by
     end
 
     private
