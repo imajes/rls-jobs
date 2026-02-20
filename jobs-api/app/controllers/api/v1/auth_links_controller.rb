@@ -11,6 +11,13 @@ module Api
         slack_user_name = params[:slack_user_name].to_s
 
         if slack_user_id.blank? || slack_team_id.blank?
+          Ops::Monitor.new.record_auth_link_error!(
+            context: {
+              reason: "missing_required_fields",
+              slack_user_id_present: slack_user_id.present?,
+              slack_team_id_present: slack_team_id.present?,
+            }
+          )
           render json: { ok: false, error: 'slack_user_id and slack_team_id are required' }, status: :unprocessable_entity
           return
         end
@@ -32,6 +39,7 @@ module Api
           ttl_seconds: ttl_seconds
         }, status: :created
       rescue ActiveRecord::RecordInvalid => e
+        Ops::Monitor.new.record_auth_link_error!(context: { reason: e.message })
         render json: { ok: false, error: e.message }, status: :unprocessable_entity
       end
 

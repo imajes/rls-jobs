@@ -1,6 +1,7 @@
 const { randomUUID } = require('node:crypto');
 
 const { CHANNEL_LABELS, mapFocusToChannelId, recommendChannel } = require('./channel-routing');
+const { createAlerting } = require('./alerting');
 const { buildAppHomeView } = require('./app-home');
 const { POST_KIND } = require('./constants');
 const { buildCandidateDetailsModal, buildJobDetailsModal } = require('./details-modals');
@@ -57,6 +58,8 @@ const {
   validateJobStep3,
 } = require('./validation');
 const { getRadioValue } = require('./view-state');
+
+const BETA_CHANNEL_LABEL = '#rls-jobs-beta';
 
 async function openModal(client, triggerId, view) {
   await client.views.open({
@@ -124,6 +127,24 @@ function parseRouteValue(rawValue) {
   return { channelFocus, previewId };
 }
 
+function isBetaMode(config) {
+  return config.operationMode === 'beta';
+}
+
+function buildPreviewUiOptions(config) {
+  if (isBetaMode(config)) {
+    return {
+      allowRouteOverride: false,
+      routeLockedMessage: '🔒 Beta mode is active. Publishing is locked to #rls-jobs-beta.',
+    };
+  }
+
+  return {
+    allowRouteOverride: true,
+    routeLockedMessage: '',
+  };
+}
+
 function formatAuthExpiry(expiresAt, ttlSeconds) {
   if (expiresAt) {
     return `This link expires at ${expiresAt}.`;
@@ -154,26 +175,27 @@ const CHANNEL_ENV_KEYS = {
   jobs_consulting: 'RLS_CHANNEL_JOBS_CONSULTING_ID',
 };
 
-function buildPreviewMessageForRoute(userId, preview, channelFocus, routedChannelId) {
+function buildPreviewMessageForRoute(userId, preview, channelFocus, routedChannelId, config) {
   const recommendation = {
     key: channelFocus || preview.recommendation?.key,
     reason: 'user_route_override',
   };
+  const previewUi = buildPreviewUiOptions(config);
   if (preview.kind === POST_KIND.JOB) {
-    return jobPreviewMessage(userId, preview.values, recommendation, routedChannelId, preview.id);
+    return jobPreviewMessage(userId, preview.values, recommendation, routedChannelId, preview.id, previewUi);
   }
 
-  return candidatePreviewMessage(userId, preview.values, recommendation, routedChannelId, preview.id);
+  return candidatePreviewMessage(userId, preview.values, recommendation, routedChannelId, preview.id, previewUi);
 }
 
-async function refreshPreviewCard(client, body, preview, channelFocus, routedChannelId, logger) {
+async function refreshPreviewCard(client, body, preview, channelFocus, routedChannelId, logger, config) {
   const channel = body.container?.channel_id;
   const ts = body.container?.message_ts;
   if (!channel || !ts) {
     return;
   }
 
-  const message = buildPreviewMessageForRoute(body.user.id, preview, channelFocus, routedChannelId);
+  const message = buildPreviewMessageForRoute(body.user.id, preview, channelFocus, routedChannelId, config);
 
   try {
     await client.chat.update({
@@ -187,19 +209,173 @@ async function refreshPreviewCard(client, body, preview, channelFocus, routedCha
   }
 }
 
-function resolvePreviewRoute(preview, channelIds) {
+function resolvePreviewRoute(preview, config) {
+  if (isBetaMode(config)) {
+    return {
+      channelFocus: 'jobs',
+      routedChannelId: config.channelIds.jobsBeta,
+      channelLabel: BETA_CHANNEL_LABEL,
+    };
+  }
+
+  const channelIds = config.channelIds;
   const channelFocus = preview.channelFocus || preview.recommendation?.key;
   const routedChannelId = preview.routedChannelId || mapFocusToChannelId(channelFocus, channelIds);
-  return { channelFocus, routedChannelId };
+  const channelLabel = CHANNEL_LABELS[channelFocus] || '#jobs';
+  return { channelFocus, routedChannelId, channelLabel };
 }
 
-function routeMissingConfigMessage(channelFocus) {
+function routeMissingConfigMessage(channelFocus, config) {
+  if (isBetaMode(config)) {
+    return `Beta mode is enabled, but ${BETA_CHANNEL_LABEL} is not configured. Set RLS_CHANNEL_JOBS_BETA_ID and try again.`;
+  }
+
   const label = CHANNEL_LABELS[channelFocus] || '#jobs';
   const envKey = CHANNEL_ENV_KEYS[channelFocus] || 'RLS_CHANNEL_JOBS_ID';
   return `Route is set to ${label}, but no channel ID is configured. Set ${envKey} and try again.`;
 }
 
-function createHomePostingsLoader(config, logger, postingsCache) {
+function enforceBetaCommandChannel(command, config) {
+  if (!isBetaMode(config)) {
+    return { ok: true };
+  }
+
+  if (!config.channelIds.jobsBeta) {
+    return {
+      ok: false,
+      reason: `Beta mode is active but ${BETA_CHANNEL_LABEL} is not configured. Ask an admin to set RLS_CHANNEL_JOBS_BETA_ID.`,
+    };
+  }
+
+  if (command.channel_id !== config.channelIds.jobsBeta) {
+    return {
+      ok: false,
+      reason: `Beta mode is enabled. Run this command inside ${BETA_CHANNEL_LABEL} only.`,
+    };
+  }
+
+  return { ok: true };
+}
+
+function buildHealthResponse(config, outbox) {
+  const queueSize = outbox?.queueSize?.() ?? 0;
+  const deadLetters = outbox?.deadLetterCount?.() ?? 0;
+  const lastFlushAt = outbox?.lastFlushAt?.() || 'never';
+  const apiReadMode = config.jobsApi.readEnabled ? 'enabled' : 'disabled';
+  const moderationMode = config.moderation.enabled ? 'enabled' : 'disabled';
+  const alertsMode = config.alerts.enabled ? 'enabled' : 'disabled';
+  const operationMode = isBetaMode(config) ? `beta (${BETA_CHANNEL_LABEL})` : 'normal';
+
+  const text =
+    '*RLS Jobs health snapshot*\n' +
+    `• Outbox queue: ${queueSize}\n` +
+    `• Dead-letter count: ${deadLetters}\n` +
+    `• Last outbox flush: ${lastFlushAt}\n` +
+    `• API read mode: ${apiReadMode}\n` +
+    `• Moderation mode: ${moderationMode}\n` +
+    `• Alerting mode: ${alertsMode}\n` +
+    `• Operation mode: ${operationMode}`;
+
+  return {
+    response_type: 'ephemeral',
+    text,
+    blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text,
+        },
+      },
+    ],
+  };
+}
+
+function createOutboxBacklogMonitor({ config, outbox, alerting }) {
+  const state = {
+    level: 'normal',
+    recoveryBeganAt: 0,
+  };
+
+  function currentLevel(size) {
+    if (size >= config.outbox.backlogCritical) {
+      return 'critical';
+    }
+    if (size >= config.outbox.backlogWarn) {
+      return 'warning';
+    }
+    return 'normal';
+  }
+
+  async function check() {
+    const queueSize = outbox.queueSize();
+    const level = currentLevel(queueSize);
+    const now = Date.now();
+    const recoveryWindowMs = alerting.minIntervalSeconds() * 1000;
+
+    if (level === 'normal') {
+      if (state.level !== 'normal') {
+        if (!state.recoveryBeganAt) {
+          state.recoveryBeganAt = now;
+        }
+
+        if (now - state.recoveryBeganAt >= recoveryWindowMs) {
+          const previous = state.level;
+          state.level = 'normal';
+          state.recoveryBeganAt = 0;
+          await alerting.emit({
+            severity: 'warning',
+            code: 'SLACK_OUTBOX_BACKLOG_HIGH_RECOVERED',
+            message: 'Slack outbox backlog has recovered below warning threshold.',
+            fingerprint: 'global',
+            context: {
+              previous_level: previous,
+              queue_size: queueSize,
+              warn_threshold: config.outbox.backlogWarn,
+              critical_threshold: config.outbox.backlogCritical,
+            },
+          });
+        }
+      }
+      return;
+    }
+
+    state.recoveryBeganAt = 0;
+    if (state.level === level) {
+      return;
+    }
+
+    state.level = level;
+    await alerting.emit({
+      severity: level,
+      code: 'SLACK_OUTBOX_BACKLOG_HIGH',
+      message: 'Slack outbox backlog exceeded threshold.',
+      fingerprint: 'global',
+      context: {
+        queue_size: queueSize,
+        warn_threshold: config.outbox.backlogWarn,
+        critical_threshold: config.outbox.backlogCritical,
+      },
+    });
+  }
+
+  const intervalMs = Math.max(5000, Number(config.outbox.flushIntervalMs || 15000));
+  const timer = setInterval(() => {
+    check().catch(() => {});
+  }, intervalMs);
+  if (timer.unref) {
+    timer.unref();
+  }
+
+  return {
+    stop() {
+      clearInterval(timer);
+    },
+    check,
+  };
+}
+
+function createHomePostingsLoader(config, logger, postingsCache, alerting) {
   return async (userId) => {
     const localPostings = listPostingsByUser(userId);
 
@@ -231,21 +407,43 @@ function createHomePostingsLoader(config, logger, postingsCache) {
 
     if (cached?.postings?.length) {
       logger.warn(`jobs_api_read_fallback source=stale_cache reason=${apiResult.reason}`);
+      await alerting.emit({
+        severity: 'warning',
+        code: 'SLACK_API_READ_FALLBACK_ACTIVE',
+        message: 'App Home API read fallback is active; serving stale cache.',
+        fingerprint: 'stale_cache',
+        context: {
+          source: 'stale_cache',
+          reason: apiResult.reason || 'unknown',
+          user_id: userId,
+        },
+      });
       return cached.postings;
     }
 
     logger.warn(`jobs_api_read_fallback source=local_store reason=${apiResult.reason}`);
+    await alerting.emit({
+      severity: 'warning',
+      code: 'SLACK_API_READ_FALLBACK_ACTIVE',
+      message: 'App Home API read fallback is active; serving local in-memory store.',
+      fingerprint: 'local_store',
+      context: {
+        source: 'local_store',
+        reason: apiResult.reason || 'unknown',
+        user_id: userId,
+      },
+    });
     postingsCache.set(userId, localPostings);
     return localPostings;
   };
 }
 
-async function publishHome(client, userId, logger, getPostingsForHome) {
+async function publishHome(client, userId, logger, getPostingsForHome, config) {
   try {
     const postings = await getPostingsForHome(userId);
     await client.views.publish({
       user_id: userId,
-      view: buildAppHomeView(postings),
+      view: buildAppHomeView(postings, { operationMode: config.operationMode }),
     });
   } catch (error) {
     logger.error(error);
@@ -269,7 +467,7 @@ function buildIngestPayload({
   moderation = {},
   extra = {},
 }) {
-  const channelLabel = CHANNEL_LABELS[posting.channelFocus] || '#jobs';
+  const channelLabel = posting.channelLabel || CHANNEL_LABELS[posting.channelFocus] || '#jobs';
 
   return {
     payloadVersion: 1,
@@ -468,14 +666,14 @@ async function publishPreview({
     return;
   }
 
-  const { channelFocus, routedChannelId } = resolvePreviewRoute(preview, config.channelIds);
+  const { channelFocus, routedChannelId, channelLabel } = resolvePreviewRoute(preview, config);
   if (!routedChannelId) {
-    await sendDm(client, body.user.id, routeMissingConfigMessage(channelFocus));
+    await sendDm(client, body.user.id, routeMissingConfigMessage(channelFocus, config));
     return;
   }
 
   if (isPublishedToRoute(previewId, routedChannelId)) {
-    const label = CHANNEL_LABELS[channelFocus] || '#jobs';
+    const label = channelLabel || CHANNEL_LABELS[channelFocus] || '#jobs';
     await sendDm(client, body.user.id, `This preview is already published to ${label}.`);
     return;
   }
@@ -500,7 +698,7 @@ async function publishPreview({
     logger.warn('unable_to_get_permalink', error);
   }
 
-  const label = CHANNEL_LABELS[channelFocus] || '#jobs';
+  const label = channelLabel || CHANNEL_LABELS[channelFocus] || '#jobs';
   await sendDm(client, body.user.id, permalink ? `Published to ${label}: ${permalink}` : `Published to ${label}.`);
   const moderation = await fetchModerationMetadata(client, config, body.user.id, logger);
 
@@ -511,13 +709,14 @@ async function publishPreview({
     posterUserId: body.user.id,
     channelId: routedChannelId,
     channelFocus,
+    channelLabel: label,
     messageTs: posted.ts || '',
     permalink,
     moderation,
   });
 
   postingsCache.evict(body.user.id);
-  await publishHome(client, body.user.id, logger, getPostingsForHome);
+  await publishHome(client, body.user.id, logger, getPostingsForHome, config);
   await notifyModerationQueueIfNeeded(client, config, posting, moderation, logger);
 
   await postLifecycleIngestEvent(
@@ -542,8 +741,15 @@ async function publishPreview({
 }
 
 function registerHandlers(app, config) {
+  const alerting = createAlerting({
+    service: 'slack-app',
+    logger: app.logger,
+    enabled: config.alerts.enabled,
+    webhookUrl: config.alerts.slackWebhookUrl,
+    minIntervalSeconds: config.alerts.minIntervalSeconds,
+  });
   const postingsCache = createPostingsCache({ ttlMs: config.cache.postingsTtlMs });
-  const getPostingsForHome = createHomePostingsLoader(config, app.logger, postingsCache);
+  const getPostingsForHome = createHomePostingsLoader(config, app.logger, postingsCache, alerting);
   const outbox = new IngestOutbox({
     enabled: config.outbox.enabled,
     outboxPath: config.outbox.path,
@@ -553,9 +759,28 @@ function registerHandlers(app, config) {
     retryBaseMs: config.outbox.retryBaseMs,
     deliver: async (payload) => postIntakeEvent(config, payload, app.logger),
     logger: app.logger,
+    onDeadLetter: (record) => {
+      alerting
+        .emit({
+          severity: 'critical',
+          code: 'SLACK_OUTBOX_DEAD_LETTERED',
+          message: 'Lifecycle ingest event moved to dead-letter queue.',
+          fingerprint: record.event_id || 'unknown',
+          context: {
+            event_id: record.event_id || '',
+            posting_id: record.payload?.postingId || '',
+            event_type: record.payload?.eventType || '',
+            reason: record.last_error || 'unknown_error',
+            attempts: Number(record.attempts || 0),
+          },
+        })
+        .catch(() => {});
+    },
   });
   outbox.start();
+  const outboxMonitor = createOutboxBacklogMonitor({ config, outbox, alerting });
   app.__rlsOutbox = outbox;
+  app.__rlsOutboxMonitor = outboxMonitor;
 
   app.shortcut('post_job_shortcut', async ({ ack, body, client, logger }) => {
     await ack();
@@ -577,6 +802,11 @@ function registerHandlers(app, config) {
 
   const intakeCommandHandler = async ({ ack, command, client, logger }) => {
     await ack();
+    const betaCheck = enforceBetaCommandChannel(command, config);
+    if (!betaCheck.ok) {
+      await sendDm(client, command.user_id, betaCheck.reason);
+      return;
+    }
 
     const inferredKind = inferKindFromCommandText(command.text || '');
     const initialView =
@@ -595,6 +825,13 @@ function registerHandlers(app, config) {
 
   app.command('/rls-jobs-intake', intakeCommandHandler);
   app.command('/rls-job-intake', intakeCommandHandler);
+
+  const healthCommandHandler = async ({ ack }) => {
+    await ack(buildHealthResponse(config, outbox));
+  };
+
+  app.command('/rls-jobs-health', healthCommandHandler);
+  app.command('/rls-job-health', healthCommandHandler);
 
   const authCommandHandler = async ({ ack, command, client, logger }) => {
     await ack();
@@ -634,7 +871,7 @@ function registerHandlers(app, config) {
   app.command('/rls-job-auth', authCommandHandler);
 
   app.event('app_home_opened', async ({ event, client, logger }) => {
-    await publishHome(client, event.user, logger, getPostingsForHome);
+    await publishHome(client, event.user, logger, getPostingsForHome, config);
   });
 
   app.view('intake_kind_chooser_modal', async ({ ack, logger, view }) => {
@@ -724,14 +961,26 @@ function registerHandlers(app, config) {
     const values = { ...metadata.data, ...stepData, posterUserId: body.user.id };
     await ack();
 
-    const recommendation = recommendChannel(POST_KIND.JOB, values);
-    const routedChannelId = mapFocusToChannelId(recommendation.key, config.channelIds);
+    const recommendation = isBetaMode(config)
+      ? { key: 'jobs', reason: 'beta_mode_forced' }
+      : recommendChannel(POST_KIND.JOB, values);
+    const routedChannelId = isBetaMode(config)
+      ? config.channelIds.jobsBeta
+      : mapFocusToChannelId(recommendation.key, config.channelIds);
     const previewId = createPreview(POST_KIND.JOB, values, recommendation, routedChannelId);
-    const preview = jobPreviewMessage(body.user.id, values, recommendation, routedChannelId, previewId);
+    const preview = jobPreviewMessage(
+      body.user.id,
+      values,
+      recommendation,
+      routedChannelId,
+      previewId,
+      buildPreviewUiOptions(config),
+    );
 
     try {
       await client.chat.postMessage(preview);
-      logger.info(`job_preview_created user=${body.user.id} route=${CHANNEL_LABELS[recommendation.key] || '#jobs'}`);
+      const previewRouteLabel = isBetaMode(config) ? BETA_CHANNEL_LABEL : CHANNEL_LABELS[recommendation.key] || '#jobs';
+      logger.info(`job_preview_created user=${body.user.id} route=${previewRouteLabel}`);
     } catch (error) {
       logger.error(error);
     }
@@ -791,16 +1040,26 @@ function registerHandlers(app, config) {
     const values = { ...metadata.data, ...stepData, posterUserId: body.user.id };
     await ack();
 
-    const recommendation = recommendChannel(POST_KIND.CANDIDATE, values);
-    const routedChannelId = mapFocusToChannelId(recommendation.key, config.channelIds);
+    const recommendation = isBetaMode(config)
+      ? { key: 'jobs', reason: 'beta_mode_forced' }
+      : recommendChannel(POST_KIND.CANDIDATE, values);
+    const routedChannelId = isBetaMode(config)
+      ? config.channelIds.jobsBeta
+      : mapFocusToChannelId(recommendation.key, config.channelIds);
     const previewId = createPreview(POST_KIND.CANDIDATE, values, recommendation, routedChannelId);
-    const preview = candidatePreviewMessage(body.user.id, values, recommendation, routedChannelId, previewId);
+    const preview = candidatePreviewMessage(
+      body.user.id,
+      values,
+      recommendation,
+      routedChannelId,
+      previewId,
+      buildPreviewUiOptions(config),
+    );
 
     try {
       await client.chat.postMessage(preview);
-      logger.info(
-        `candidate_preview_created user=${body.user.id} route=${CHANNEL_LABELS[recommendation.key] || '#jobs'}`,
-      );
+      const previewRouteLabel = isBetaMode(config) ? BETA_CHANNEL_LABEL : CHANNEL_LABELS[recommendation.key] || '#jobs';
+      logger.info(`candidate_preview_created user=${body.user.id} route=${previewRouteLabel}`);
     } catch (error) {
       logger.error(error);
     }
@@ -919,7 +1178,7 @@ function registerHandlers(app, config) {
       });
       await sendDm(client, body.user.id, 'Posting archived.');
       postingsCache.evict(body.user.id);
-      await publishHome(client, body.user.id, logger, getPostingsForHome);
+      await publishHome(client, body.user.id, logger, getPostingsForHome, config);
 
       await postLifecycleIngestEvent(
         config,
@@ -987,7 +1246,7 @@ function registerHandlers(app, config) {
       });
       await sendDm(client, body.user.id, 'Posting updated.');
       postingsCache.evict(body.user.id);
-      await publishHome(client, body.user.id, logger, getPostingsForHome);
+      await publishHome(client, body.user.id, logger, getPostingsForHome, config);
 
       await postLifecycleIngestEvent(
         config,
@@ -1055,7 +1314,7 @@ function registerHandlers(app, config) {
       });
       await sendDm(client, body.user.id, 'Posting updated.');
       postingsCache.evict(body.user.id);
-      await publishHome(client, body.user.id, logger, getPostingsForHome);
+      await publishHome(client, body.user.id, logger, getPostingsForHome, config);
 
       await postLifecycleIngestEvent(
         config,
@@ -1111,6 +1370,15 @@ function registerHandlers(app, config) {
 
   app.action('job_card_route_channel', async ({ ack, body, client }) => {
     await ack();
+    if (isBetaMode(config)) {
+      await sendDm(
+        client,
+        body.user.id,
+        `Routing is locked while beta mode is enabled. Destination: ${BETA_CHANNEL_LABEL}.`,
+      );
+      return;
+    }
+
     const { channelFocus, previewId } = parseRouteValue(body.actions?.[0]?.selected_option?.value);
     const preview = getPreview(previewId);
     if (!preview) {
@@ -1120,11 +1388,11 @@ function registerHandlers(app, config) {
 
     const routedChannelId = mapFocusToChannelId(channelFocus, config.channelIds);
     updatePreviewRoute(previewId, channelFocus, routedChannelId);
-    await refreshPreviewCard(client, body, preview, channelFocus, routedChannelId, app.logger);
+    await refreshPreviewCard(client, body, preview, channelFocus, routedChannelId, app.logger, config);
 
     const label = CHANNEL_LABELS[channelFocus] || '#jobs';
     if (!routedChannelId) {
-      await sendDm(client, body.user.id, routeMissingConfigMessage(channelFocus));
+      await sendDm(client, body.user.id, routeMissingConfigMessage(channelFocus, config));
       return;
     }
     await sendDm(client, body.user.id, `Route preference captured: ${label}`);
@@ -1132,6 +1400,15 @@ function registerHandlers(app, config) {
 
   app.action('candidate_card_route_channel', async ({ ack, body, client }) => {
     await ack();
+    if (isBetaMode(config)) {
+      await sendDm(
+        client,
+        body.user.id,
+        `Routing is locked while beta mode is enabled. Destination: ${BETA_CHANNEL_LABEL}.`,
+      );
+      return;
+    }
+
     const { channelFocus, previewId } = parseRouteValue(body.actions?.[0]?.selected_option?.value);
     const preview = getPreview(previewId);
     if (!preview) {
@@ -1141,11 +1418,11 @@ function registerHandlers(app, config) {
 
     const routedChannelId = mapFocusToChannelId(channelFocus, config.channelIds);
     updatePreviewRoute(previewId, channelFocus, routedChannelId);
-    await refreshPreviewCard(client, body, preview, channelFocus, routedChannelId, app.logger);
+    await refreshPreviewCard(client, body, preview, channelFocus, routedChannelId, app.logger, config);
 
     const label = CHANNEL_LABELS[channelFocus] || '#jobs';
     if (!routedChannelId) {
-      await sendDm(client, body.user.id, routeMissingConfigMessage(channelFocus));
+      await sendDm(client, body.user.id, routeMissingConfigMessage(channelFocus, config));
       return;
     }
     await sendDm(client, body.user.id, `Route preference captured: ${label}`);

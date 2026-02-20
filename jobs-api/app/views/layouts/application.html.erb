@@ -34,6 +34,7 @@
             <% end %>
             <% if rls_admin? %>
               <a href="<%= admin_root_path %>">Admin</a>
+              <a href="<%= admin_ops_path %>">Ops</a>
             <% end %>
             <%= button_to "Sign out", auth_logout_path, method: :delete, class: "top-bar__logout" %>
           <% else %>

@@ -143,6 +143,36 @@ module Admin
       assert_equal "UADMIN", @posting.moderation_reviewed_by
     end
 
+    test "beta mode defaults admin listing to beta channel and supports view all" do
+      old_mode = ENV["RLS_OPERATION_MODE"]
+      old_beta_channel = ENV["RLS_CHANNEL_JOBS_BETA_ID"]
+      ENV["RLS_OPERATION_MODE"] = "beta"
+      ENV["RLS_CHANNEL_JOBS_BETA_ID"] = "CBETA"
+
+      begin
+        @posting.update!(channel_id: "CBETA")
+        off_scope = Posting.create!(
+          external_posting_id: "admin-posting-off-scope",
+          kind: "job_posting",
+          status: "active",
+          channel_id: "COTHER",
+          values_payload: { companyName: "NotBeta", roleTitle: "Off Scope" }.to_json,
+          last_payload: { eventType: "slack_post_published" }.to_json
+        )
+
+        get admin_postings_path
+        assert_response :success
+        refute_includes response.body, off_scope.external_posting_id
+
+        get admin_postings_path, params: { scope: "all" }
+        assert_response :success
+        assert_includes response.body, off_scope.external_posting_id
+      ensure
+        ENV["RLS_OPERATION_MODE"] = old_mode
+        ENV["RLS_CHANNEL_JOBS_BETA_ID"] = old_beta_channel
+      end
+    end
+
     private
 
     def authenticate!(slack_user_id)

@@ -10,11 +10,22 @@ module Api
         return if performed?
 
         result = IngestSlackEvent.new(payload:).call
+        monitor = Ops::Monitor.new
 
         if result.errors.any?
+          monitor.record_intake_validation_error!(
+            context: {
+              reason: result.errors.join("; "),
+              event_type: payload["eventType"],
+              kind: payload["kind"],
+            }
+          )
+          monitor.evaluate_unresolved_ingest_failures!
           render json: { ok: false, errors: result.errors }, status: :unprocessable_entity
           return
         end
+
+        monitor.evaluate_unresolved_ingest_failures!
 
         render json: {
           ok: true,
@@ -38,12 +49,14 @@ module Api
       def parse_payload
         raw = request.raw_post.to_s
         if raw.blank?
+          Ops::Monitor.new.record_intake_validation_error!(context: { reason: "empty_request_body" })
           render json: { ok: false, error: 'request body cannot be empty' }, status: :bad_request
           return {}
         end
 
         JSON.parse(raw)
       rescue JSON::ParserError
+        Ops::Monitor.new.record_intake_validation_error!(context: { reason: "invalid_json" })
         render json: { ok: false, error: 'invalid_json' }, status: :bad_request
         {}
       end

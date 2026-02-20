@@ -1,0 +1,45 @@
+<% content_for :title, "Admin · Ops" %>
+
+<main class="detail-shell">
+  <section class="detail-hero">
+    <p class="eyebrow">Operations</p>
+    <h1>RLS Jobs Ops Dashboard</h1>
+    <p class="hero-copy">
+      Operational signal snapshot for ingest reliability, moderation workload, auth-link health, and retention cleanup readiness.
+    </p>
+    <p class="hero-copy">
+      <%= link_to "Back to admin listings", admin_postings_path %>
+    </p>
+  </section>
+
+  <section class="results-panel">
+    <div class="results-header">
+      <h2>Current status</h2>
+      <p>Generated <%= @summary[:generated_at] %></p>
+    </div>
+
+    <div class="stat-grid" role="list" aria-label="Ops metrics">
+      <div class="stat-card" role="listitem"><p class="stat-label">Unresolved ingest failures</p><p class="stat-value"><%= @summary[:unresolved_ingest_failures] %></p></div>
+      <div class="stat-card" role="listitem"><p class="stat-label">Replayed failures (24h)</p><p class="stat-value"><%= @summary[:replayed_failures_24h] %></p></div>
+      <div class="stat-card" role="listitem"><p class="stat-label">Intake volume (24h)</p><p class="stat-value"><%= @summary[:intake_volume_24h] %></p></div>
+      <div class="stat-card" role="listitem"><p class="stat-label">Duplicate ingest rate (24h)</p><p class="stat-value"><%= @summary[:duplicate_ingest_rate_24h] %>%</p></div>
+      <div class="stat-card" role="listitem"><p class="stat-label">Moderation flagged (active)</p><p class="stat-value"><%= @summary[:moderation_flagged_active] %></p></div>
+      <div class="stat-card" role="listitem"><p class="stat-label">Moderation escalated</p><p class="stat-value"><%= @summary[:moderation_escalated] %></p></div>
+      <div class="stat-card" role="listitem"><p class="stat-label">Auth links issued (24h)</p><p class="stat-value"><%= @summary[:auth_link_issuance_24h] %></p></div>
+      <div class="stat-card" role="listitem"><p class="stat-label">Auth-link failures (24h)</p><p class="stat-value"><%= @summary[:auth_link_failures_24h] %></p></div>
+      <div class="stat-card" role="listitem"><p class="stat-label">Intake validation failures (24h)</p><p class="stat-value"><%= @summary[:intake_validation_failures_24h] %></p></div>
+      <div class="stat-card" role="listitem"><p class="stat-label">Cleanup candidates (>90d archived)</p><p class="stat-value"><%= @summary[:retention_cleanup_preview_90d] %></p></div>
+    </div>
+  </section>
+
+  <section class="filter-panel">
+    <h2>Triage shortcuts</h2>
+    <ul class="auth-list">
+      <li><%= link_to "Open moderation flagged listings", admin_postings_path(moderation: "flagged") %></li>
+      <li><%= link_to "Open escalated moderation listings", admin_postings_path(moderation: "escalated") %></li>
+      <li>Replay command (dry-run first): <code>bin/rails rls:replay_ingest_failures DRY_RUN=true LIMIT=50</code></li>
+      <li>Replay command (targeted): <code>bin/rails rls:replay_ingest_failures DRY_RUN=false ID=123</code></li>
+      <li>Cleanup command preview: <code>Delete archived postings older than 90 days</code> from <%= link_to "Admin listings", admin_postings_path %>.</li>
+    </ul>
+  </section>
+</main>

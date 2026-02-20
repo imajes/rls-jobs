@@ -24,6 +24,7 @@ test('required env detection works', () => {
 });
 
 test('recommended env detection covers publish + auth vars', () => {
+  process.env.RLS_OPERATION_MODE = 'normal';
   delete process.env.RLS_CHANNEL_JOBS_ID;
   delete process.env.RLS_CHANNEL_ONSITE_JOBS_ID;
   delete process.env.RLS_CHANNEL_REMOTE_JOBS_ID;
@@ -43,18 +44,28 @@ test('getConfig parses feature flags and retry settings', () => {
   process.env.RLS_OUTBOX_ENABLED = '1';
   process.env.RLS_INGEST_RETRY_MAX_ATTEMPTS = '7';
   process.env.RLS_INGEST_RETRY_BASE_MS = '250';
+  process.env.RLS_OUTBOX_BACKLOG_WARN = '30';
+  process.env.RLS_OUTBOX_BACKLOG_CRITICAL = '120';
   process.env.RLS_MODERATION_ENABLED = 'true';
   process.env.RLS_NEW_ACCOUNT_DAYS = '21';
+  process.env.RLS_ALERTS_ENABLED = 'true';
+  process.env.RLS_ALERTS_MIN_INTERVAL_SECONDS = '600';
+  process.env.RLS_OPERATION_MODE = 'beta';
   process.env.RLS_OUTBOX_PATH = 'tmp/custom-outbox.ndjson';
   process.env.RLS_OUTBOX_DEAD_PATH = 'tmp/custom-dead.ndjson';
 
   const config = getConfig();
+  assert.equal(config.operationMode, 'beta');
   assert.equal(config.jobsApi.readEnabled, true);
   assert.equal(config.outbox.enabled, true);
   assert.equal(config.outbox.retryMaxAttempts, 7);
   assert.equal(config.outbox.retryBaseMs, 250);
+  assert.equal(config.outbox.backlogWarn, 30);
+  assert.equal(config.outbox.backlogCritical, 120);
   assert.equal(config.outbox.path, 'tmp/custom-outbox.ndjson');
   assert.equal(config.outbox.deadPath, 'tmp/custom-dead.ndjson');
   assert.equal(config.moderation.enabled, true);
   assert.equal(config.moderation.newAccountDays, 21);
+  assert.equal(config.alerts.enabled, true);
+  assert.equal(config.alerts.minIntervalSeconds, 600);
 });

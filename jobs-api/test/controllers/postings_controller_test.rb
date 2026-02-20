@@ -2,10 +2,16 @@ require "test_helper"
 
 class PostingsControllerTest < ActionDispatch::IntegrationTest
   setup do
+    @old_operation_mode = ENV["RLS_OPERATION_MODE"]
+    @old_beta_channel = ENV["RLS_CHANNEL_JOBS_BETA_ID"]
+    ENV["RLS_OPERATION_MODE"] = "beta"
+    ENV["RLS_CHANNEL_JOBS_BETA_ID"] = "CBETA"
+
     @job = Posting.create!(
       external_posting_id: "posting_job_100",
       kind: "job_posting",
       status: "active",
+      channel_id: "CBETA",
       company_name: "Pied Piper",
       role_title: "Senior Platform Engineer",
       location_summary: "Hybrid in NYC",
@@ -22,6 +28,7 @@ class PostingsControllerTest < ActionDispatch::IntegrationTest
       external_posting_id: "posting_candidate_100",
       kind: "candidate_profile",
       status: "active",
+      channel_id: "CBETA",
       headline: "Staff Security Engineer",
       location_summary: "Remote, US",
       visa_policy: "unknown",
@@ -33,6 +40,11 @@ class PostingsControllerTest < ActionDispatch::IntegrationTest
     )
 
     authenticate!
+  end
+
+  teardown do
+    ENV["RLS_OPERATION_MODE"] = @old_operation_mode
+    ENV["RLS_CHANNEL_JOBS_BETA_ID"] = @old_beta_channel
   end
 
   test "index loads successfully" do
@@ -60,6 +72,28 @@ class PostingsControllerTest < ActionDispatch::IntegrationTest
     delete auth_logout_path
     get postings_path
     assert_redirected_to auth_required_path
+  end
+
+  test "beta mode defaults listings to beta channel and allows view all toggle" do
+    off_scope = Posting.create!(
+      external_posting_id: "posting_job_off_scope",
+      kind: "job_posting",
+      status: "active",
+      channel_id: "COTHER",
+      company_name: "Octocorp",
+      role_title: "Generalist",
+      search_text: "octocorp generalist",
+      values_payload: { companyName: "Octocorp", roleTitle: "Generalist" }.to_json,
+      last_payload: { eventType: "slack_post_published" }.to_json,
+    )
+
+    get postings_path
+    assert_response :success
+    refute_includes response.body, off_scope.role_title
+
+    get postings_path, params: { scope: "all" }
+    assert_response :success
+    assert_includes response.body, off_scope.role_title
   end
 
   private

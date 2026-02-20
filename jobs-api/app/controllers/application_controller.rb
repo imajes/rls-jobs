@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
   stale_when_importmap_changes
 
   helper_method :rls_authenticated?, :rls_slack_user_id, :rls_hard_expires_at, :rls_idle_expires_at
-  helper_method :rls_admin?
+  helper_method :rls_admin?, :rls_operation_mode, :rls_beta_mode?, :rls_beta_channel_id
 
   private
 
@@ -111,5 +111,17 @@ class ApplicationController < ActionController::Base
       .split(",")
       .map(&:strip)
       .reject(&:blank?)
+  end
+
+  def rls_operation_mode
+    ENV.fetch("RLS_OPERATION_MODE", "normal").to_s == "beta" ? "beta" : "normal"
+  end
+
+  def rls_beta_mode?
+    rls_operation_mode == "beta"
+  end
+
+  def rls_beta_channel_id
+    ENV.fetch("RLS_CHANNEL_JOBS_BETA_ID", "").to_s
   end
 end

@@ -2,7 +2,14 @@ module Admin
   class PostingsController < BaseController
     def index
       @filters = normalized_filters
+      @beta_default_scope = rls_beta_mode? && rls_beta_channel_id.present?
+      @showing_all_records = @beta_default_scope && @filters[:scope] == "all"
+
       scope = Posting.all
+      if @beta_default_scope && !@showing_all_records
+        scope = scope.where(channel_id: rls_beta_channel_id)
+      end
+
       scope = scope.where(status: @filters[:status]) unless @filters[:status] == "all"
       scope = scope.where(kind: @filters[:kind]) unless @filters[:kind] == "all"
       scope = apply_moderation_filter(scope, @filters[:moderation])
@@ -137,10 +144,11 @@ module Admin
     end
 
     def normalized_filters
-      raw = params.permit(:status, :kind, :q, :limit, :moderation)
+      raw = params.permit(:status, :kind, :q, :limit, :moderation, :scope)
       {
         status: %w[all active archived].include?(raw[:status]) ? raw[:status] : "all",
         kind: %w[all job_posting candidate_profile].include?(raw[:kind]) ? raw[:kind] : "all",
+        scope: %w[beta all].include?(raw[:scope]) ? raw[:scope] : "beta",
         moderation: fetch_moderation_filter(raw[:moderation]),
         q: raw[:q].to_s.strip,
         limit: begin

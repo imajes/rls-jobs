@@ -5,6 +5,7 @@ Rails.application.routes.draw do
       post "auth_links", to: "auth_links#create"
       get "postings", to: "postings#index"
       get "postings/:external_posting_id", to: "postings#show", as: :posting
+      get "ops/summary", to: "ops#summary"
     end
   end
 
@@ -24,6 +25,7 @@ Rails.application.routes.draw do
 
   namespace :admin do
     root "postings#index"
+    get "ops", to: "ops#index"
     resources :postings, only: [:index, :edit, :update] do
       member do
         patch :archive

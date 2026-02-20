@@ -7,6 +7,9 @@
     <p class="hero-copy">
       Use this panel to repair malformed records, archive/restore listings, and remove stale archived content.
     </p>
+    <p class="hero-copy">
+      <%= link_to "Open Ops dashboard", admin_ops_path %>
+    </p>
     <div class="stat-grid">
       <div class="stat-card"><p class="stat-label">Total postings</p><p class="stat-value"><%= @stats[:total] %></p></div>
       <div class="stat-card"><p class="stat-label">Archived</p><p class="stat-value"><%= @stats[:archived] %></p></div>
@@ -18,9 +21,26 @@
     </div>
   </section>
 
+  <% if @beta_default_scope %>
+    <section class="scope-banner">
+      <% if @showing_all_records %>
+        <p>
+          Showing <strong>all records</strong> while beta mode is active.
+          <%= link_to "Switch back to beta-only", admin_postings_path(request.query_parameters.merge(scope: "beta")) %>
+        </p>
+      <% else %>
+        <p>
+          Beta mode is active. Admin results default to <strong>#rls-jobs-beta</strong>.
+          <%= link_to "View all records", admin_postings_path(request.query_parameters.merge(scope: "all")) %>
+        </p>
+      <% end %>
+    </section>
+  <% end %>
+
   <section class="filter-panel">
     <h2>Filter</h2>
     <%= form_with url: admin_postings_path, method: :get, local: true, class: "filter-grid" do %>
+      <%= hidden_field_tag :scope, @filters[:scope] %>
       <label>
         Search
         <%= text_field_tag :q, @filters[:q], placeholder: "Role, company, headline", class: "text-field" %>

@@ -58,6 +58,7 @@ module Api
         assert_response :unprocessable_entity
         body = JSON.parse(response.body)
         assert_equal false, body["ok"]
+        assert_equal 1, OpsEvent.for_code(Ops::Monitor::AUTH_LINK_ERROR_EVENT).count
       end
     end
   end

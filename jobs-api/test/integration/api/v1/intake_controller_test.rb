@@ -45,6 +45,7 @@ module Api
         assert_equal true, body["duplicate"]
         assert_equal 1, Posting.count
         assert_equal 1, IntakeEvent.count
+        assert_equal 1, OpsEvent.for_code(Ops::Monitor::INTAKE_DUPLICATE_EVENT).count
       end
 
       test "archives existing posting when archive event arrives" do
@@ -101,6 +102,7 @@ module Api
         body = JSON.parse(response.body)
         assert_equal false, body["ok"]
         assert_equal "invalid_json", body["error"]
+        assert_equal 1, OpsEvent.for_code(Ops::Monitor::INTAKE_VALIDATION_ERROR_EVENT).count
       end
 
       test "rejects semantic payload errors" do

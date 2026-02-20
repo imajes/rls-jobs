@@ -136,6 +136,7 @@ function toPostingShape(payload) {
     posterUserId: payload.poster_user_id || '',
     channelId: payload.channel_id || '',
     channelFocus: payload.channel_focus || '',
+    channelLabel: payload.channel_label || '',
     messageTs: payload.published_message_ts || '',
     permalink: payload.permalink || '',
     createdAt: Date.parse(payload.created_at || '') || Date.now(),

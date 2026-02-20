@@ -292,6 +292,18 @@ h2 {
   color: var(--text-muted);
 }
 
+.scope-banner {
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line) 76%);
+  background: color-mix(in srgb, var(--accent) 8%, white 92%);
+  border-radius: var(--radius-lg);
+  padding: 0.7rem 0.85rem;
+  font-size: 0.9rem;
+}
+
+.scope-banner p {
+  margin: 0;
+}
+
 .posting-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));

@@ -26,7 +26,14 @@ function checkManifest(manifest) {
   const failures = [];
 
   const commandNames = (manifest.features?.slash_commands || []).map((item) => item.command);
-  for (const expected of ['/rls-jobs-intake', '/rls-job-intake', '/rls-jobs-auth', '/rls-job-auth']) {
+  for (const expected of [
+    '/rls-jobs-intake',
+    '/rls-job-intake',
+    '/rls-jobs-auth',
+    '/rls-job-auth',
+    '/rls-jobs-health',
+    '/rls-job-health',
+  ]) {
     if (!commandNames.includes(expected)) {
       failures.push(`manifest missing slash command ${expected}`);
     }

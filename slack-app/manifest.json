@@ -56,6 +56,20 @@
         "description": "Alias for /rls-jobs-auth",
         "usage_hint": "",
         "should_escape": false
+      },
+      {
+        "command": "/rls-jobs-health",
+        "url": "https://example.com/slack/commands",
+        "description": "Show app outbox/feature health snapshot",
+        "usage_hint": "",
+        "should_escape": false
+      },
+      {
+        "command": "/rls-job-health",
+        "url": "https://example.com/slack/commands",
+        "description": "Alias for /rls-jobs-health",
+        "usage_hint": "",
+        "should_escape": false
       }
     ]
   },

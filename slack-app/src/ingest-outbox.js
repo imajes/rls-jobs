@@ -31,7 +31,17 @@ function jitteredDelay(baseDelayMs) {
 }
 
 class IngestOutbox {
-  constructor({ enabled, outboxPath, deadPath, flushIntervalMs, retryMaxAttempts, retryBaseMs, deliver, logger }) {
+  constructor({
+    enabled,
+    outboxPath,
+    deadPath,
+    flushIntervalMs,
+    retryMaxAttempts,
+    retryBaseMs,
+    deliver,
+    logger,
+    onDeadLetter,
+  }) {
     this.enabled = Boolean(enabled);
     this.outboxPath = path.resolve(process.cwd(), outboxPath);
     this.deadPath = path.resolve(process.cwd(), deadPath);
@@ -40,10 +50,13 @@ class IngestOutbox {
     this.retryBaseMs = Number(retryBaseMs || 1000);
     this.deliver = deliver;
     this.logger = logger;
+    this.onDeadLetter = onDeadLetter;
     this.queue = new Map();
     this.timer = null;
     this.flushing = false;
     this.initialized = false;
+    this.deadLetterCountValue = 0;
+    this.lastFlushAtValue = '';
   }
 
   ensureInitialized() {
@@ -61,6 +74,12 @@ class IngestOutbox {
     if (!fs.existsSync(this.deadPath)) {
       fs.writeFileSync(this.deadPath, '', 'utf8');
     }
+
+    this.deadLetterCountValue = fs
+      .readFileSync(this.deadPath, 'utf8')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean).length;
 
     const raw = fs.readFileSync(this.outboxPath, 'utf8');
     const lines = raw
@@ -165,6 +184,7 @@ class IngestOutbox {
       for (const record of due) {
         await this.deliverRecord(record, false);
       }
+      this.lastFlushAtValue = new Date().toISOString();
     } finally {
       this.flushing = false;
     }
@@ -213,6 +233,14 @@ class IngestOutbox {
     };
 
     fs.appendFileSync(this.deadPath, `${JSON.stringify(deadRecord)}\n`, 'utf8');
+    this.deadLetterCountValue += 1;
+    if (typeof this.onDeadLetter === 'function') {
+      try {
+        this.onDeadLetter(deadRecord);
+      } catch (_error) {
+        // Do not let callbacks interrupt outbox processing.
+      }
+    }
   }
 
   persistQueue() {
@@ -226,6 +254,14 @@ class IngestOutbox {
 
   queueSize() {
     return this.queue.size;
+  }
+
+  deadLetterCount() {
+    return this.deadLetterCountValue;
+  }
+
+  lastFlushAt() {
+    return this.lastFlushAtValue;
   }
 }
 

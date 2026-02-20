@@ -39,7 +39,8 @@ function routeOptions(previewId) {
   }));
 }
 
-function jobPreviewMessage(userId, values, recommendation, routedChannelId, previewId) {
+function jobPreviewMessage(userId, values, recommendation, routedChannelId, previewId, options = {}) {
+  const { allowRouteOverride = true, routeLockedMessage = '' } = options;
   const employment = toLabelList(values.employmentTypes, labels.employmentType).join(', ') || 'Not specified';
   const visa = labels.visa[values.visaPolicy] || 'Not specified';
   const summary = values.summary || 'No summary provided.';
@@ -87,12 +88,15 @@ function jobPreviewMessage(userId, values, recommendation, routedChannelId, prev
     //   },
     //   value: previewId,
     // },
-    {
+  ];
+
+  if (allowRouteOverride) {
+    actions.push({
       type: 'overflow',
       action_id: 'job_card_route_channel',
       options: routeOptions(previewId),
-    },
-  ];
+    });
+  }
 
   return {
     channel: userId,
@@ -162,6 +166,15 @@ function jobPreviewMessage(userId, values, recommendation, routedChannelId, prev
               : 'No configured channel ID found for this route.',
             emoji: true,
           },
+          ...(routeLockedMessage
+            ? [
+                {
+                  type: 'plain_text',
+                  text: routeLockedMessage,
+                  emoji: true,
+                },
+              ]
+            : []),
         ],
       },
       {
@@ -172,7 +185,8 @@ function jobPreviewMessage(userId, values, recommendation, routedChannelId, prev
   };
 }
 
-function candidatePreviewMessage(userId, values, recommendation, routedChannelId, previewId) {
+function candidatePreviewMessage(userId, values, recommendation, routedChannelId, previewId, options = {}) {
+  const { allowRouteOverride = true, routeLockedMessage = '' } = options;
   const arrangements = toLabelList(values.workArrangements, labels.workArrangement).join(', ') || 'Not specified';
   const availability =
     toLabelList(values.availabilityModes, labels.candidateAvailability).join(', ') || 'Not specified';
@@ -246,6 +260,15 @@ function candidatePreviewMessage(userId, values, recommendation, routedChannelId
               : 'No configured channel ID found for this route.',
             emoji: true,
           },
+          ...(routeLockedMessage
+            ? [
+                {
+                  type: 'plain_text',
+                  text: routeLockedMessage,
+                  emoji: true,
+                },
+              ]
+            : []),
         ],
       },
       {
@@ -283,11 +306,15 @@ function candidatePreviewMessage(userId, values, recommendation, routedChannelId
           //   },
           //   value: previewId,
           // },
-          {
-            type: 'overflow',
-            action_id: 'candidate_card_route_channel',
-            options: routeOptions(previewId),
-          },
+          ...(allowRouteOverride
+            ? [
+                {
+                  type: 'overflow',
+                  action_id: 'candidate_card_route_channel',
+                  options: routeOptions(previewId),
+                },
+              ]
+            : []),
         ],
       },
     ],

@@ -51,6 +51,7 @@ test('outbox immediate success does not leave queued records', async () => {
 test('outbox retries and dead-letters after max attempts', async () => {
   const { dir, outboxPath, deadPath } = makePaths();
   let attempts = 0;
+  let deadLettered = 0;
   const outbox = new IngestOutbox({
     enabled: true,
     outboxPath,
@@ -59,6 +60,9 @@ test('outbox retries and dead-letters after max attempts', async () => {
     retryMaxAttempts: 2,
     retryBaseMs: 0,
     logger: { error() {}, warn() {} },
+    onDeadLetter: () => {
+      deadLettered += 1;
+    },
     deliver: async () => {
       attempts += 1;
       return { sent: false, reason: 'http_500' };
@@ -77,6 +81,9 @@ test('outbox retries and dead-letters after max attempts', async () => {
 
     assert.equal(attempts, 2);
     assert.equal(outbox.queueSize(), 0);
+    assert.equal(deadLettered, 1);
+    assert.equal(outbox.deadLetterCount(), 1);
+    assert.notEqual(outbox.lastFlushAt(), '');
 
     const outboxContents = fs.readFileSync(outboxPath, 'utf8').trim();
     assert.equal(outboxContents, '');

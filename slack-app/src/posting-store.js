@@ -9,6 +9,7 @@ function createPosting({
   posterUserId,
   channelId,
   channelFocus,
+  channelLabel = '',
   messageTs = '',
   permalink = '',
   status = 'active',
@@ -25,6 +26,7 @@ function createPosting({
     posterUserId,
     channelId,
     channelFocus,
+    channelLabel,
     messageTs,
     permalink,
     status,
@@ -97,6 +99,7 @@ function upsertPosting(snapshot) {
       status: snapshot.status || 'active',
       createdAt: snapshot.createdAt || Date.now(),
       updatedAt: snapshot.updatedAt || Date.now(),
+      channelLabel: snapshot.channelLabel || '',
     });
   }
 

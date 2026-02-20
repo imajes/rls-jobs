@@ -89,7 +89,13 @@ function postingSection(posting) {
   ];
 }
 
-function buildAppHomeView(postings) {
+function buildAppHomeView(postings, options = {}) {
+  const operationMode = options.operationMode || 'normal';
+  const intakeHint =
+    operationMode === 'beta'
+      ? 'Tip: beta mode is enabled. Use `/rls-jobs-intake` inside #rls-jobs-beta.'
+      : 'Tip: you can also use `/rls-jobs-intake job` or `/rls-jobs-intake candidate` from any channel.';
+
   const active = postings.filter((posting) => posting.status !== 'archived');
   const archived = postings.filter((posting) => posting.status === 'archived');
 
@@ -135,7 +141,7 @@ function buildAppHomeView(postings) {
       elements: [
         {
           type: 'mrkdwn',
-          text: 'Tip: you can also use `/rls-jobs-intake job` or `/rls-jobs-intake candidate` from any channel.',
+          text: intakeHint,
         },
       ],
     },

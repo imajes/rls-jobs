@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_19_000500) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_19_100000) do
   create_table "auth_links", force: :cascade do |t|
     t.datetime "consumed_at"
     t.string "consumed_ip"
@@ -132,6 +132,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_19_000500) do
     t.check_constraint "kind IN ('job_posting', 'candidate_profile')", name: "check_postings_kind_allowlist"
     t.check_constraint "moderation_state IN ('unreviewed', 'reviewed', 'cleared', 'escalated')", name: "check_postings_moderation_state_allowlist"
     t.check_constraint "status IN ('active', 'archived')", name: "check_postings_status_allowlist"
+  end
+
+  create_table "ops_alert_states", force: :cascade do |t|
+    t.boolean "active", default: false, null: false
+    t.string "active_level", default: "normal", null: false
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.string "fingerprint", default: "global", null: false
+    t.datetime "last_emitted_at"
+    t.datetime "last_observed_at"
+    t.datetime "last_recovered_at"
+    t.integer "last_value"
+    t.datetime "recovery_started_at"
+    t.datetime "updated_at", null: false
+    t.index ["code", "fingerprint"], name: "index_ops_alert_states_on_code_and_fingerprint", unique: true
+  end
+
+  create_table "ops_events", force: :cascade do |t|
+    t.string "code", null: false
+    t.text "context_payload", default: "{}", null: false
+    t.datetime "created_at", null: false
+    t.datetime "occurred_at", null: false
+    t.string "severity", default: "warning", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code", "occurred_at"], name: "index_ops_events_on_code_and_occurred_at"
+    t.index ["occurred_at"], name: "index_ops_events_on_occurred_at"
   end
 
   add_foreign_key "intake_events", "postings"

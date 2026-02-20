@@ -28,6 +28,17 @@ class IngestSlackEvent
     if existing_event
       posting = Posting.find_by(external_posting_id: existing_event.external_posting_id)
       IngestFailure.resolve_for_fingerprint!(fingerprint)
+      begin
+        Ops::Monitor.new(now: received_at).record_intake_duplicate!(
+          context: {
+            event_type: payload["eventType"],
+            kind: payload["kind"],
+            external_posting_id: existing_event.external_posting_id,
+          }
+        )
+      rescue StandardError
+        nil
+      end
       return Result.new(posting: posting, intake_event: existing_event, duplicate: true, errors: [])
     end
 

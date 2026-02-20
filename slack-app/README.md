@@ -12,6 +12,8 @@ Structured Slack intake for job postings and candidate availability using Bolt f
   - `/rls-job-intake` (alias for typo-friendly entry)
   - `/rls-jobs-auth` (issues one-time web auth link via Jobs API)
   - `/rls-job-auth` (alias for typo-friendly entry)
+  - `/rls-jobs-health` (ephemeral health snapshot)
+  - `/rls-job-health` (alias for typo-friendly entry)
 - Block Kit modals for both post kinds + intake type chooser
 - Strict required fields with inline modal validation
 - Smart channel recommendation for:
@@ -31,6 +33,8 @@ Structured Slack intake for job postings and candidate availability using Bolt f
 - One-time auth link command to bootstrap RLS-gated web session
 - Durable lifecycle ingest outbox with retry/dead-letter files
 - Soft moderation enrichment (new-account flag metadata + optional mod queue notification)
+- Dual-sink ops alerting (structured logs + Slack webhook transport)
+- Beta isolation mode (hard route to `#rls-jobs-beta`)
 
 Step Three packages this for deployment and go-live.
 Step Four/Step Six extend API sync and secure web-auth bootstrap.
@@ -127,6 +131,8 @@ Optional:
 - `RLS_CHANNEL_REMOTE_JOBS_ID`
 - `RLS_CHANNEL_JOBS_COFOUNDERS_ID`
 - `RLS_CHANNEL_JOBS_CONSULTING_ID`
+- `RLS_CHANNEL_JOBS_BETA_ID`
+- `RLS_OPERATION_MODE`
 - `RLS_JOBS_API_INGEST_URL`
 - `RLS_JOBS_API_POSTINGS_URL`
 - `RLS_JOBS_API_AUTH_LINK_URL`
@@ -139,9 +145,14 @@ Optional:
 - `RLS_OUTBOX_FLUSH_INTERVAL_MS`
 - `RLS_INGEST_RETRY_MAX_ATTEMPTS`
 - `RLS_INGEST_RETRY_BASE_MS`
+- `RLS_OUTBOX_BACKLOG_WARN`
+- `RLS_OUTBOX_BACKLOG_CRITICAL`
 - `RLS_MODERATION_ENABLED`
 - `RLS_NEW_ACCOUNT_DAYS`
 - `RLS_MOD_QUEUE_CHANNEL_ID`
+- `RLS_ALERTS_ENABLED`
+- `RLS_ALERTS_SLACK_WEBHOOK_URL`
+- `RLS_ALERTS_MIN_INTERVAL_SECONDS`
 
 ## Notes
 
@@ -155,3 +166,4 @@ Optional:
 - `users:read` bot scope is required for account-age moderation enrichment.
 - Outbox durability requires persistent storage mounted to `/app/storage`.
 - For production rollout, see `slack-app/docs/step-3-go-live.md`.
+- For ops rollout hardening, see `slack-app/docs/step-9-ops-rollout-telemetry-beta-mode.md`.

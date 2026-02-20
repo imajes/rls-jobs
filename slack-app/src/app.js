@@ -64,6 +64,9 @@ async function start() {
           if (app.__rlsOutbox && typeof app.__rlsOutbox.stop === 'function') {
             app.__rlsOutbox.stop();
           }
+          if (app.__rlsOutboxMonitor && typeof app.__rlsOutboxMonitor.stop === 'function') {
+            app.__rlsOutboxMonitor.stop();
+          }
           await app.stop();
           process.exit(0);
         } catch (error) {

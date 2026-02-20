@@ -8,6 +8,7 @@ Ingests structured Slack posting events and serves a protected browse UI for job
 - Slack read endpoints:
   - `GET /api/v1/postings`
   - `GET /api/v1/postings/:external_posting_id`
+  - `GET /api/v1/ops/summary`
 - Durable persistence:
   - `postings` (current materialized listing state)
   - `intake_events` (immutable ingest history)
@@ -20,6 +21,7 @@ Ingests structured Slack posting events and serves a protected browse UI for job
 - Browse UI:
   - `GET /` and `GET /postings`
   - `GET /postings/:id`
+  - `GET /admin/ops`
   - filters/search/sorts + responsive layout
 
 ## Environment variables
@@ -33,6 +35,22 @@ Ingests structured Slack posting events and serves a protected browse UI for job
 - `RLS_ADMIN_SLACK_USER_IDS`
   - comma-separated Slack user IDs with access to `/admin`
   - if unset, admin is allowed only in non-production environments
+- `RLS_OPERATION_MODE`
+  - `normal` (default) or `beta`
+- `RLS_CHANNEL_JOBS_BETA_ID`
+  - beta channel ID used for default browse/admin scoping when mode is `beta`
+- `RLS_ALERTS_ENABLED`
+  - enable/disable Slack webhook alert transport (logs remain on)
+- `RLS_ALERTS_SLACK_WEBHOOK_URL`
+  - incoming webhook URL targeting `#rls-jobs-bot-ops`
+- `RLS_ALERTS_MIN_INTERVAL_SECONDS`
+  - dedupe/recovery window in seconds (default `900`)
+- `RLS_INGEST_FAILURE_WARN` / `RLS_INGEST_FAILURE_CRITICAL`
+  - unresolved ingest failure thresholds (defaults `10` / `50`)
+- `RLS_AUTH_LINK_ERROR_WARN`
+  - auth-link error warning threshold for rolling 15m window (default `5`)
+- `RLS_INTAKE_VALIDATION_ERROR_WARN`
+  - intake validation error warning threshold for rolling 15m window (default `20`)
 
 ## Security/session behavior
 
@@ -46,6 +64,8 @@ Ingests structured Slack posting events and serves a protected browse UI for job
 
 - `GET /admin`
   - listing cleanup and moderation dashboard
+- `GET /admin/ops`
+  - operations dashboard for ingest/auth/moderation/retention signals
 - actions:
   - archive/restore postings
   - edit normalized fields
@@ -90,3 +110,4 @@ bin/rails server
 - `docs/step-5-browse-ui.md`
 - `docs/step-6-rls-auth.md`
 - `docs/step-8-data-hardening-and-moderation.md`
+- `docs/step-9-ops-rollout-telemetry-beta-mode.md`

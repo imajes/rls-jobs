@@ -13,8 +13,15 @@ class PostingsController < ApplicationController
   def index
     @filters = normalized_filters
     @channel_focuses = Posting.where.not(channel_focus: [nil, '']).distinct.order(:channel_focus).pluck(:channel_focus)
+    @beta_default_scope = rls_beta_mode? && rls_beta_channel_id.present?
+    @showing_all_records = @beta_default_scope && @filters[:scope] == "all"
 
-    scope = apply_filters(Posting.all)
+    base_scope = Posting.all
+    if @beta_default_scope && !@showing_all_records
+      base_scope = base_scope.where(channel_id: rls_beta_channel_id)
+    end
+
+    scope = apply_filters(base_scope)
     @postings = scope.order(SORT_ORDERS.fetch(@filters[:sort])).limit(@filters[:limit])
 
     @stats = {
@@ -94,6 +101,7 @@ class PostingsController < ApplicationController
       :has_compensation,
       :work_arrangement,
       :employment_type,
+      :scope,
       :sort,
       :limit
     )
@@ -107,6 +115,7 @@ class PostingsController < ApplicationController
       has_compensation: fetch_from(raw[:has_compensation], %w[all yes no], 'all'),
       work_arrangement: fetch_from(raw[:work_arrangement], %w[all remote hybrid onsite], 'all'),
       employment_type: fetch_from(raw[:employment_type], %w[all full_time part_time contract consulting cofounder], 'all'),
+      scope: fetch_from(raw[:scope], %w[beta all], 'beta'),
       sort: fetch_from(raw[:sort], SORT_ORDERS.keys, 'recently_updated'),
       limit: begin
         parsed_limit = raw[:limit].presence ? raw[:limit].to_i : 60
