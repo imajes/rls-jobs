@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rls-jobs.local/schemas/intake-event.schema.json",
+  "title": "RLS Jobs Intake Event",
+  "description": "Lifecycle ingest envelope accepted by POST /api/v1/intake.",
+  "type": "object",
+  "required": ["eventType", "kind", "route", "slack", "values"],
+  "properties": {
+    "payloadVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1
+    },
+    "eventType": {
+      "type": "string",
+      "enum": ["slack_post_published", "slack_post_updated", "slack_post_archived"]
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["job_posting", "candidate_profile"]
+    },
+    "previewId": {
+      "type": "string"
+    },
+    "postingId": {
+      "type": "string"
+    },
+    "permalink": {
+      "type": "string"
+    },
+    "route": {
+      "type": "object",
+      "required": ["channelFocus", "channelId"],
+      "properties": {
+        "channelFocus": { "type": "string" },
+        "channelId": { "type": "string" },
+        "channelLabel": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "slack": {
+      "type": "object",
+      "required": ["teamId", "publishedByUserId"],
+      "properties": {
+        "teamId": { "type": "string" },
+        "previewDmChannelId": { "type": "string" },
+        "previewDmMessageTs": { "type": "string" },
+        "publishedMessageTs": { "type": "string" },
+        "publishedByUserId": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "moderation": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "flagged": { "type": "boolean" },
+        "reason": { "type": "string" },
+        "accountAgeDays": { "type": "integer" },
+        "thresholdDays": { "type": "integer" }
+      },
+      "additionalProperties": true
+    },
+    "values": {
+      "type": "object",
+      "required": ["posterUserId"],
+      "properties": {
+        "posterUserId": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "postedAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "archivedAt": { "type": "string", "format": "date-time" },
+    "archivedByUserId": { "type": "string" }
+  },
+  "anyOf": [
+    { "required": ["postingId"] },
+    { "required": ["previewId"] }
+  ],
+  "additionalProperties": true
+}

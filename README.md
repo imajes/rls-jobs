@@ -221,6 +221,7 @@ Key implementation docs:
 - `docs/step-6-rls-auth-flow.md`
 - `docs/step-8-reliability-trust-data-hardening.md`
 - `docs/step-9-ops-rollout-telemetry-beta-mode.md`
+- `docs/domain-model-and-data-shape.md`
 
 ADRs:
 - `docs/adr/ADR-step-9-ops-telemetry-beta-mode.md`

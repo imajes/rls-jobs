@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rls-jobs.local/schemas/posting-api.schema.json",
+  "title": "RLS Jobs Posting API Shape",
+  "description": "Posting object returned by GET /api/v1/postings and GET /api/v1/postings/:external_posting_id.",
+  "type": "object",
+  "required": [
+    "external_posting_id",
+    "kind",
+    "status",
+    "poster_user_id",
+    "team_id",
+    "channel_id",
+    "channel_focus",
+    "channel_label",
+    "published_message_ts",
+    "permalink",
+    "created_at",
+    "updated_at",
+    "values",
+    "moderation"
+  ],
+  "properties": {
+    "external_posting_id": { "type": "string" },
+    "kind": {
+      "type": "string",
+      "enum": ["job_posting", "candidate_profile"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "archived"]
+    },
+    "poster_user_id": { "type": ["string", "null"] },
+    "team_id": { "type": ["string", "null"] },
+    "channel_id": { "type": ["string", "null"] },
+    "channel_focus": { "type": ["string", "null"] },
+    "channel_label": { "type": ["string", "null"] },
+    "published_message_ts": { "type": ["string", "null"] },
+    "permalink": { "type": ["string", "null"] },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "archived_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "values": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "moderation": {
+      "type": "object",
+      "required": [
+        "flagged",
+        "state",
+        "reason",
+        "account_age_days",
+        "last_reviewed_at",
+        "reviewed_by"
+      ],
+      "properties": {
+        "flagged": { "type": "boolean" },
+        "state": {
+          "type": "string",
+          "enum": ["unreviewed", "reviewed", "cleared", "escalated"]
+        },
+        "reason": {
+          "type": ["string", "null"]
+        },
+        "account_age_days": {
+          "type": ["integer", "null"]
+        },
+        "last_reviewed_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "reviewed_by": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}
